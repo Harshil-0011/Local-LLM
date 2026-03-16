@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Local Perplex</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="container mt-5">
+    <h1>Local Perplex</h1>
+    <p class="text-muted">Private, local AI search powered by Ollama and C++ core.</p>
+    <form action="/ask" method="post" class="mt-4">
+        <div class="mb-3">
+            <label for="question" class="form-label">Question</label>
+            <input type="text" class="form-control form-control-lg" id="question" name="question" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Mode</label>
+            <select class="form-select" name="mode">
+                <option value="industry_standard">Industry Standard</option>
+                <option value="all_references">All References</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg">Ask AI</button>
+    </form>
+</body>
+</html>

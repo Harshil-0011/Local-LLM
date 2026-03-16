@@ -1,65 +1,36 @@
-# Project Wizard
+# Local Perplex
 
-A local Perplexity-style project generator for Windows that uses Ollama as the local LLM runtime.
+A completely local alternative to Perplexity AI, better in every way (privacy, performance, customization).
 
 ## Features
+- **C++ Core**: High-performance relevance ranking and text processing.
+- **Python Orchestration**: Flexible engine using Ollama.
+- **20 Sources**: Comprehensive searching using DuckDuckGo.
+- **Industry Standard vs All References**: Choose your level of detail.
+- **Web & CLI Interfaces**: Flexible usage.
 
-- **Completely Local**: No internet required to function.
-- **Ollama Integration**: Uses Ollama for planning and code generation.
-- **CPU/GPU Support**: Supports GPU acceleration automatically via Ollama.
-- **CLI & Web GUI**: Use your preferred interface.
-- **Interview Workflow**: Guided interview -> Project Specification -> Full Code Generation.
-
-## Prerequisites
-
-1. **Python 3.10+**
-2. **Ollama**:
-   - Download and install from [ollama.com](https://ollama.com).
-   - Pull the required models:
-     ```bash
-     ollama pull llama3.2:8b
-     ollama pull deepseek-coder:latest
-     ```
-
-## Installation
-
-1. Clone or download this repository.
-2. Navigate to the project root and install the package:
+## Installation (Windows)
+1. **Ollama**: Install and pull `llama3.2:8b`.
+2. **Build C++ Core**:
    ```bash
-   pip install -e .
+   mkdir build
+   cd build
+   cmake ..
+   make
    ```
-   Or install from `requirements.txt`:
+3. **Install Python Deps**:
    ```bash
    pip install -r requirements.txt
    ```
 
 ## Usage
-
-### Configuration
-
-The configuration is stored in `~/.project_wizard/config.yaml`. You can also configure it via the Web GUI settings page.
-
-### CLI Interface
-
-- **Full Workflow**:
-  ```bash
-  wizard full-run --output C:\projects\my_new_app
-  ```
-- **Individual Steps**:
-  ```bash
-  wizard interview --output C:\projects\my_new_app
-  wizard build-spec --output C:\projects\my_new_app
-  wizard generate-code --output C:\projects\my_new_app
-  ```
-
-### Web GUI Interface
-
-Start the web server:
+### CLI
 ```bash
-wizard-gui
+python -m local_perplex.ui.cli "Where do you think LLM will move towards in future please??"
 ```
-Then open your browser at [http://localhost:8000](http://localhost:8000).
 
-## License
-
-MIT
+### Web
+```bash
+python -m local_perplex.ui.web.app
+```
+Visit http://localhost:8000

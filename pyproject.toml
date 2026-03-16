@@ -18,9 +18,9 @@ dependencies = [
     "pydantic",
     "pydantic-settings",
     "python-multipart",
-    "ell-ai[all]",
     "duckduckgo_search",
-    "beautifulsoup4"
+    "beautifulsoup4",
+    "pybind11"
 ]
 
 [project.scripts]

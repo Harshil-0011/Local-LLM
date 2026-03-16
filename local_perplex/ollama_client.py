@@ -25,7 +25,3 @@ class OllamaClient:
         except Exception as e:
             logger.error(f"Error communicating with Ollama: {e}")
             raise RuntimeError(f"Ollama connection error: {e}. Is Ollama running?")
-
-def ollama_chat(base_url: str, model: str, messages: list[dict], **params) -> str:
-    client = OllamaClient(base_url)
-    return client.chat(model, messages, **params)
