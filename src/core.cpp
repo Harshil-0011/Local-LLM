@@ -50,11 +50,22 @@ struct SourceItem {
     std::string url;
     std::string content;
     double relevance;
+    std::string category;
 };
 
 class ResearchEngine {
 public:
     ResearchEngine() {}
+
+    std::string classify_source(const std::string& url) {
+        std::string low_url = url;
+        std::transform(low_url.begin(), low_url.end(), low_url.begin(), ::tolower);
+        if (low_url.find(".edu") != std::string::npos || low_url.find("arxiv") != std::string::npos) return "Academic";
+        if (low_url.find("reuters") != std::string::npos || low_url.find("bbc") != std::string::npos || low_url.find("news") != std::string::npos) return "News";
+        if (low_url.find("github") != std::string::npos || low_url.find("stackoverflow") != std::string::npos) return "Technical";
+        if (low_url.find(".gov") != std::string::npos) return "Government";
+        return "General";
+    }
 
     std::vector<SourceItem> rank_sources(const std::string& query, py::list raw_sources) {
         std::vector<SourceItem> ranked;
@@ -65,7 +76,13 @@ public:
             std::string content = d.contains("content") ? d["content"].cast<std::string>() : "";
 
             double score = TextProcessor::calculate_relevance(query, content);
-            ranked.push_back({title, url, content, score});
+            std::string category = classify_source(url);
+
+            // Credibility boost
+            if (category == "Academic") score *= 1.25;
+            if (category == "Government") score *= 1.15;
+
+            ranked.push_back({title, url, content, score, category});
         }
 
         std::sort(ranked.begin(), ranked.end(), [](const SourceItem& a, const SourceItem& b) {
@@ -81,7 +98,8 @@ PYBIND11_MODULE(local_perplex_core, m) {
         .def_readwrite("title", &SourceItem::title)
         .def_readwrite("url", &SourceItem::url)
         .def_readwrite("content", &SourceItem::content)
-        .def_readwrite("relevance", &SourceItem::relevance);
+        .def_readwrite("relevance", &SourceItem::relevance)
+        .def_readwrite("category", &SourceItem::category);
 
     py::class_<ResearchEngine>(m, "ResearchEngine")
         .def(py::init<>())

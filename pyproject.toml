@@ -20,7 +20,8 @@ dependencies = [
     "python-multipart",
     "duckduckgo_search",
     "beautifulsoup4",
-    "pybind11"
+    "pybind11",
+    "pypdf"
 ]
 
 [project.scripts]

@@ -7,7 +7,7 @@ class HistoryManager:
         self.history_dir = Path(history_dir)
         self.history_dir.mkdir(parents=True, exist_ok=True)
 
-    def save_session(self, question: str, answer: str, sources: list):
+    def save_session(self, question: str, answer: str, sources: list, tag: str = "General"):
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         safe_q = "".join([c if c.isalnum() else "_" for c in question[:30]])
         filename = f"{timestamp}_{safe_q}.json"
@@ -16,7 +16,8 @@ class HistoryManager:
             "timestamp": datetime.now().isoformat(),
             "question": question,
             "answer": answer,
-            "sources": sources
+            "sources": sources,
+            "tag": tag
         }
 
         with open(self.history_dir / filename, "w", encoding="utf-8") as f:

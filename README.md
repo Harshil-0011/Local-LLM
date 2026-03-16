@@ -10,9 +10,13 @@ Local Perplex is a high-performance, privacy-first alternative to Perplexity AI.
 - **Local RAG**: Seamlessly integrates your private `.txt` and `.md` files into any research session.
 
 ## ✨ Key Features
-- **Visual Research**: Upload images to research based on visual context.
-- **AI Query Refinement**: Intelligently optimizes your research questions into professional search queries.
-- **Knowledge Vault**: Manage and research your private documents (.txt, .md) with ease.
+- **Visual Research**: Research based on images (schematics, photos, documents).
+- **AI Query Refinement**: Intelligently optimizes questions for better site selection.
+- **Knowledge Vault Pro**: Deep research across private PDF, TXT, and MD files.
+- **Source Credibility**: C++ powered classification (Academic, News, Technical) with relevance boosts.
+- **Research Collections**: Organize your sessions with a sleek tagging system.
+- **Interactive Snippets**: Preview relevant source fragments directly in your report.
+- **Performance HUD**: Real-time tracking of research latency and LLM speed.
 - **Conversational Research**: Ask follow-up questions to drill deeper into any topic.
 - **Dual Research Modes**:
   - `Industry Standard`: Fast, focused, and concise synthesis.

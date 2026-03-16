@@ -10,3 +10,4 @@ python-multipart
 ddgs
 beautifulsoup4
 pybind11
+pypdf

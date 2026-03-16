@@ -21,16 +21,19 @@ async def index(request: Request):
 async def upload_docs(files: list[UploadFile] = File(...)):
     for file in files:
         content = await file.read()
-        try:
-            # Decode if possible
-            text = content.decode('utf-8')
-            engine.docs.add_document(file.filename, text)
-        except:
-            continue
+        if file.filename.lower().endswith('.pdf'):
+            # Save binary PDF
+            with open(engine.docs.doc_dir / file.filename, "wb") as f:
+                f.write(content)
+        else:
+            try:
+                text = content.decode('utf-8')
+                engine.docs.add_document(file.filename, text)
+            except: continue
     return RedirectResponse(url="/", status_code=303)
 
 @app.post("/ask", response_class=HTMLResponse)
-async def ask(request: Request, question: str = Form(...), mode: str = Form(...), conversation_history: str = Form(""), image: UploadFile = File(None)):
+async def ask(request: Request, question: str = Form(...), mode: str = Form(...), conversation_history: str = Form(""), image: UploadFile = File(None), tag: str = Form("General")):
     history = []
     if conversation_history:
         import json
@@ -42,7 +45,7 @@ async def ask(request: Request, question: str = Form(...), mode: str = Form(...)
         content = await image.read()
         image_b64 = base64.b64encode(content).decode('utf-8')
 
-    answer, sources, related = engine.ask(question, mode=mode, history=history, image_b64=image_b64)
+    answer, sources, related, perf = engine.ask(question, mode=mode, history=history, image_b64=image_b64, tag=tag)
 
     # Update history for next follow-up
     history.append({"question": question, "answer": answer})
@@ -57,7 +60,8 @@ async def ask(request: Request, question: str = Form(...), mode: str = Form(...)
         "mode": mode,
         "conversation_history": new_history_json,
         "history_list": history,
-        "related": related
+        "related": related,
+        "perf": perf
     })
 
 @app.get("/export/{index}", response_class=PlainTextResponse)

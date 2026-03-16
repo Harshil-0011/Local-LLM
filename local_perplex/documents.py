@@ -9,13 +9,22 @@ class DocumentManager:
     def get_local_context(self):
         context = []
         for file in self.doc_dir.glob("*"):
-            if file.suffix.lower() in [".txt", ".md"]:
+            ext = file.suffix.lower()
+            if ext in [".txt", ".md"]:
                 try:
                     with open(file, "r", encoding="utf-8") as f:
                         content = f.read()
-                        context.append(f"Local File: {file.name}\nContent: {content[:2000]}")
-                except Exception:
-                    continue
+                        context.append(f"Local File: {file.name}\nContent: {content[:2500]}")
+                except Exception: continue
+            elif ext == ".pdf":
+                try:
+                    from pypdf import PdfReader
+                    reader = PdfReader(file)
+                    content = ""
+                    for i in range(min(5, len(reader.pages))): # Read first 5 pages
+                        content += reader.pages[i].extract_text() + " "
+                    context.append(f"Local PDF: {file.name}\nContent: {content[:3000]}")
+                except Exception: continue
         return "\n\n".join(context)
 
     def add_document(self, filename: str, content: str):

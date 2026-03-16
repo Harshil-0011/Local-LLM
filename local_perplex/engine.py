@@ -13,7 +13,7 @@ class LocalPerplex:
         self.docs = DocumentManager()
         self.model = "llama3.2:8b"
 
-    def ask(self, question: str, mode: str = "industry_standard", history: list = None, image_b64: str = None):
+    def ask(self, question: str, mode: str = "industry_standard", history: list = None, image_b64: str = None, tag: str = "General"):
         if history is None: history = []
 
         vision_context = ""
@@ -116,5 +116,11 @@ class LocalPerplex:
         ])
         related = [q.strip("- ").strip() for q in related_raw.split("\n") if q.strip()][:3]
 
-        self.history.save_session(question, answer, [{"title": s.title, "url": s.url, "relevance": s.relevance} for s in selected])
-        return answer, selected, related
+        self.history.save_session(question, answer, [{"title": s.title, "url": s.url, "relevance": s.relevance, "category": s.category, "snippet": s.content[:300]} for s in selected], tag=tag)
+
+        perf_data = {
+            "latency": getattr(self.ollama, "last_latency", 0),
+            "tps": getattr(self.ollama, "last_tps", 0)
+        }
+
+        return answer, selected, related, perf_data

@@ -20,11 +20,21 @@ class OllamaClient:
             "options": params
         }
 
+        import time
+        start_time = time.time()
         try:
             response = requests.post(self.chat_url, json=payload, timeout=120)
             response.raise_for_status()
+            duration = time.time() - start_time
             result = response.json()
-            return result.get("message", {}).get("content", "")
+            content = result.get("message", {}).get("content", "")
+
+            # Simple token estimation: ~4 chars per token
+            tokens = len(content) / 4
+            self.last_latency = duration
+            self.last_tps = tokens / duration if duration > 0 else 0
+
+            return content
         except Exception as e:
             logger.error(f"Error communicating with Ollama: {e}")
             raise RuntimeError(f"Ollama connection error: {e}. Is Ollama running?")

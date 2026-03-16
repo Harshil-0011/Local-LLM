@@ -23,6 +23,11 @@
                     <input type="file" name="image" accept="image/*" style="font-size: 14px;">
                 </div>
 
+                <div style="margin-bottom: 24px;">
+                    <label style="color: var(--secondary-text); font-size: 14px; display: block; margin-bottom: 8px;">Collection Tag</label>
+                    <input type="text" name="tag" placeholder="General, Technical, Financial..." style="font-size: 14px; padding: 10px;">
+                </div>
+
                 <div class="mode-selector">
                     <label class="mode-option active" id="mode-std">
                         <input type="radio" name="mode" value="industry_standard" checked style="display: none;">
@@ -49,8 +54,13 @@
             <h3 style="margin-bottom: 24px;">Recent Research</h3>
             {% for session in history[:5] %}
             <div class="glass-card" style="padding: 16px; margin-bottom: 12px; cursor: pointer;" onclick="window.location.href='/history/{{ loop.index0 }}'">
-                <div style="display: flex; justify-content: space-between;">
-                    <span style="font-weight: 500;">{{ session.question }}</span>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <span style="font-weight: 500;">{{ session.question }}</span>
+                        <div style="margin-top: 4px;">
+                            <span style="font-size: 10px; background: var(--bg-color); border: 1px solid var(--border-color); padding: 1px 6px; border-radius: 4px;">{{ session.tag }}</span>
+                        </div>
+                    </div>
                     <span style="color: var(--secondary-text); font-size: 12px;">{{ session.timestamp[:10] }}</span>
                 </div>
             </div>
