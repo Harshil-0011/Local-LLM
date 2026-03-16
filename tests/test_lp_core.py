@@ -5,7 +5,7 @@ class TestCore(unittest.TestCase):
     def test_relevance(self):
         query = "artificial intelligence"
         content = "Artificial intelligence is a branch of computer science."
-        score = core.calculate_relevance(query, content)
+        score = core.calculate_score(query, content)
         self.assertGreater(score, 0)
 
     def test_tokenize(self):

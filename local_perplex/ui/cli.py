@@ -7,7 +7,7 @@ from local_perplex.engine import LocalPerplex
 def main(question, mode):
     lp = LocalPerplex()
     click.echo(f"Searching and analyzing...")
-    answer, sources = lp.ask(question, mode=mode)
+    answer, sources, related = lp.ask(question, mode=mode)
 
     click.echo("\n--- Answer ---")
     click.echo(answer)

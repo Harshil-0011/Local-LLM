@@ -1,42 +1,66 @@
-# Local Perplex — Premium Private Search
+# Local Perplex — The Definitive Local AI Researcher
 
-A completely local alternative to Perplexity AI, better in every way. Private, stunningly minimal, and high-performance.
+Local Perplex is a high-performance, privacy-first alternative to Perplexity AI. It combines a high-speed **C++ Core** for relevance ranking with **Ollama** for state-of-the-art LLM synthesis, providing a premium research experience entirely on your local machine.
 
-## Premium Features
-- **Minimalist Design**: A premium UI inspired by Apple, Nothing, and Google.
-- **C++ Core**: High-performance relevance ranking and text processing.
-- **Research History**: Save and revisit your research sessions.
-- **Conversational Research**: Ask follow-up questions to deepen your understanding.
-- **Local Document RAG**: Drop .txt or .md files into the `documents/` folder to include them in your research.
-- **Research Export**: Export your findings as professional Markdown reports.
+## 🚀 Why Local Perplex?
+- **Extreme Privacy**: Your queries and research data never leave your computer.
+- **C++ Performance**: Heavy-duty text processing and source ranking are handled by a native C++ engine.
+- **Premium UI**: Minimalist, stunning interface inspired by Apple, Nothing, and Google.
+- **Deep Research**: Simultaneously analyzes 20+ sources to build exhaustive reports.
+- **Local RAG**: Seamlessly integrates your private `.txt` and `.md` files into any research session.
+
+## ✨ Key Features
+- **Conversational Research**: Ask follow-up questions to drill deeper into any topic.
 - **Dual Research Modes**:
-  - *Industry Standard*: Concise, focused synthesis.
-  - *All References*: Deep, exhaustive detail with every possible citation.
-- **Ollama Integration**: Runs completely on your machine using local LLMs.
-- **20+ Sources**: Deep research powered by high-relevance web scraping.
+  - `Industry Standard`: Fast, focused, and concise synthesis.
+  - `All References`: Deep-dive analysis with exhaustive citations.
+- **History & Export**: Auto-save every research session and export to professional Markdown.
+- **Related Suggestions**: Intelligently suggests the next steps for your research.
 
-## Installation (Windows)
-1. **Ollama**: Install and pull `llama3.2:8b`.
-2. **Build C++ Core**:
-   ```bash
-   mkdir build
-   cd build
-   cmake ..
-   make
-   ```
-3. **Install Python Deps**:
-   ```bash
-   pip install -r requirements.txt
-   ```
+## 🛠 Installation (Windows)
 
-## Usage
-### CLI
+### 1. Prerequisites
+- **Python 3.10+**: [Download here](https://www.python.org/)
+- **Ollama**: [Download here](https://ollama.com/)
+- **C++ Build Tools**: Install [Visual Studio Community](https://visualstudio.microsoft.com/vs/community/) with "Desktop development with C++".
+
+### 2. Setup Ollama
+Pull the recommended research model:
 ```bash
-python -m local_perplex.ui.cli "Where do you think LLM will move towards in future please??"
+ollama pull llama3.2:8b
 ```
 
-### Web
+### 3. Build & Install
 ```bash
-python -m local_perplex.ui.web.app
+# Build the C++ High-Performance Core
+mkdir build
+cd build
+cmake ..
+cmake --build . --config Release
+
+# Install Python dependencies
+cd ..
+pip install -r requirements.txt
 ```
-Visit http://localhost:8000
+
+## 💻 Usage
+
+### Launch the Premium Web Interface
+```bash
+perplex-gui
+```
+Visit `http://localhost:8000` to start your first research session.
+
+### Terminal Interface (Power User)
+```bash
+perplex "What are the latest breakthroughs in solid-state battery technology?" --mode all_references
+```
+
+## 📂 Project Structure
+- `src/`: Native C++ Core for ranking and processing.
+- `local_perplex/`: Python orchestration and UI layer.
+- `documents/`: Your private RAG folder. Drop files here to research them.
+- `history/`: Persistent storage of your research sessions.
+
+---
+*Built for the privacy-conscious researcher. Better than Perplexity, in every way.*

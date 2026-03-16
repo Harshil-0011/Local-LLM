@@ -1,70 +1,64 @@
-from .search import SearchEngine
 from .ollama_client import OllamaClient
 from .history import HistoryManager
 from .documents import DocumentManager
-import os
-import yaml
-from pathlib import Path
-
-class Config:
-    def __init__(self):
-        self.ollama_base_url = "http://localhost:11434"
-        self.model = "llama3.2:8b"
+from .search import SearchEngine
+import local_perplex.local_perplex_core as cpp_core
 
 class LocalPerplex:
     def __init__(self):
-        self.config = Config()
         self.search_engine = SearchEngine()
-        self.ollama = OllamaClient(self.config.ollama_base_url)
+        self.cpp_engine = cpp_core.ResearchEngine()
+        self.ollama = OllamaClient("http://localhost:11434")
         self.history = HistoryManager()
         self.docs = DocumentManager()
+        self.model = "llama3.2:8b"
 
     def ask(self, question: str, mode: str = "industry_standard", history: list = None):
-        if history is None:
-            history = []
+        if history is None: history = []
 
-        num_sources = 20
-        sources = self.search_engine.search(question, num_results=num_sources)
+        # 1. Search Web (Fast Scrape)
+        raw_web_sources = self.search_engine.search(question, num_results=20)
 
-        # Select sources based on mode
-        if mode == "industry_standard":
-            selected_sources = sources[:10]
-        else:
-            selected_sources = sources
+        # 2. C++ High-Performance Ranking
+        ranked_sources = self.cpp_engine.rank_sources(question, [
+            {"title": s["title"], "url": s["url"], "content": s["content"]}
+            for s in raw_web_sources
+        ])
 
-        context = "\n\n".join([f"Source: {s['url']}\nContent: {s['content'][:3000]}" for s in selected_sources])
+        # 3. Select sources
+        limit = 10 if mode == "industry_standard" else 20
+        selected = ranked_sources[:limit]
 
-        # Add local documents to context
+        # 4. Synthesize Context
+        context = "\n\n".join([f"Source: {s.url}\nContent: {s.content[:2500]}" for s in selected])
+
+        # Add local documents
         local_context = self.docs.get_local_context()
         if local_context:
             context = f"--- LOCAL DOCUMENTS ---\n{local_context}\n\n--- WEB SOURCES ---\n{context}"
 
+        # 5. Synthesis Prompt
         system_prompt = (
-            "You are a helpful AI assistant. Use the provided sources to answer the user's question accurately. "
-            "Always cite your sources using [URL]. If you don't know the answer based on sources, say so."
+            "You are a premium AI researcher. Use the provided context to answer the user's question with absolute precision. "
+            "Cite sources as [URL]. If the information is missing, be honest."
         )
-
         if mode == "all_references":
-            system_prompt += " Provide a very detailed answer including all possible references from the sources."
+            system_prompt += " Provide an exhaustive analysis with deep technical detail."
 
         messages = [{"role": "system", "content": system_prompt}]
-
-        # Add history if available
         for h in history:
             messages.append({"role": "user", "content": h["question"]})
             messages.append({"role": "assistant", "content": h["answer"]})
-
         messages.append({"role": "user", "content": f"Context:\n{context}\n\nQuestion: {question}"})
 
-        answer = self.ollama.chat(self.config.model, messages)
+        # 6. Generate Answer & Related
+        answer = self.ollama.chat(self.model, messages)
 
-        # Generate related questions
-        related_prompt = [
-            {"role": "system", "content": "Based on the research answer, suggest 3 concise follow-up questions the user might be interested in. Return only the questions, one per line."},
+        related_raw = self.ollama.chat(self.model, [
+            {"role": "system", "content": "Suggest 3 follow-up research questions based on the answer. One per line."},
             {"role": "user", "content": answer}
-        ]
-        related_raw = self.ollama.chat(self.config.model, related_prompt)
-        related_questions = [q.strip("- ").strip() for q in related_raw.split("\n") if q.strip()][:3]
+        ])
+        related = [q.strip("- ").strip() for q in related_raw.split("\n") if q.strip()][:3]
 
-        self.history.save_session(question, answer, selected_sources)
-        return answer, selected_sources, related_questions
+        self.history.save_session(question, answer, [{"title": s.title, "url": s.url, "relevance": s.relevance} for s in selected])
+        return answer, selected, related
