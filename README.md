@@ -1,13 +1,16 @@
-# Local Perplex
+# Local Perplex — Premium Private Search
 
-A completely local alternative to Perplexity AI, better in every way (privacy, performance, customization).
+A completely local alternative to Perplexity AI, better in every way. Private, stunningly minimal, and high-performance.
 
-## Features
+## Premium Features
+- **Minimalist Design**: A premium UI inspired by Apple, Nothing, and Google.
 - **C++ Core**: High-performance relevance ranking and text processing.
-- **Python Orchestration**: Flexible engine using Ollama.
-- **20 Sources**: Comprehensive searching using DuckDuckGo.
-- **Industry Standard vs All References**: Choose your level of detail.
-- **Web & CLI Interfaces**: Flexible usage.
+- **Research History**: Save and revisit your research sessions.
+- **Dual Research Modes**:
+  - *Industry Standard*: Concise, focused synthesis.
+  - *All References*: Deep, exhaustive detail with every possible citation.
+- **Ollama Integration**: Runs completely on your machine using local LLMs.
+- **20+ Sources**: Deep research powered by high-relevance web scraping.
 
 ## Installation (Windows)
 1. **Ollama**: Install and pull `llama3.2:8b`.

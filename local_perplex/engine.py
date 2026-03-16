@@ -1,5 +1,6 @@
 from .search import SearchEngine
 from .ollama_client import OllamaClient
+from .history import HistoryManager
 import os
 import yaml
 from pathlib import Path
@@ -14,6 +15,7 @@ class LocalPerplex:
         self.config = Config()
         self.search_engine = SearchEngine()
         self.ollama = OllamaClient(self.config.ollama_base_url)
+        self.history = HistoryManager()
 
     def ask(self, question: str, mode: str = "industry_standard"):
         num_sources = 20
@@ -41,4 +43,5 @@ class LocalPerplex:
         ]
 
         answer = self.ollama.chat(self.config.model, messages)
+        self.history.save_session(question, answer, selected_sources)
         return answer, selected_sources
