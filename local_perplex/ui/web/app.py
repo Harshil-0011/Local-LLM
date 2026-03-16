@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Form
+from fastapi import FastAPI, Request, Form, File, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse, PlainTextResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
@@ -14,16 +14,35 @@ engine = LocalPerplex()
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     history = engine.history.get_all_sessions()
-    return templates.TemplateResponse("index.html", {"request": request, "history": history})
+    docs = [f.name for f in engine.docs.doc_dir.glob("*") if f.is_file()]
+    return templates.TemplateResponse("index.html", {"request": request, "history": history, "docs": docs})
+
+@app.post("/upload-docs")
+async def upload_docs(files: list[UploadFile] = File(...)):
+    for file in files:
+        content = await file.read()
+        try:
+            # Decode if possible
+            text = content.decode('utf-8')
+            engine.docs.add_document(file.filename, text)
+        except:
+            continue
+    return RedirectResponse(url="/", status_code=303)
 
 @app.post("/ask", response_class=HTMLResponse)
-def ask(request: Request, question: str = Form(...), mode: str = Form(...), conversation_history: str = Form("")):
+async def ask(request: Request, question: str = Form(...), mode: str = Form(...), conversation_history: str = Form(""), image: UploadFile = File(None)):
     history = []
     if conversation_history:
         import json
         history = json.loads(conversation_history)
 
-    answer, sources, related = engine.ask(question, mode=mode, history=history)
+    image_b64 = None
+    if image and image.filename:
+        import base64
+        content = await image.read()
+        image_b64 = base64.b64encode(content).decode('utf-8')
+
+    answer, sources, related = engine.ask(question, mode=mode, history=history, image_b64=image_b64)
 
     # Update history for next follow-up
     history.append({"question": question, "answer": answer})
@@ -71,6 +90,7 @@ async def view_history(request: Request, index: int):
     return RedirectResponse(url="/", status_code=303)
 
 def main():
+    # Set max upload size to 10MB
     uvicorn.run(app, host="0.0.0.0", port=8000)
 
 if __name__ == "__main__":

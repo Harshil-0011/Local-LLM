@@ -15,8 +15,13 @@
 
         <div class="glass-card">
             <h2 style="margin-top: 0; margin-bottom: 24px;">Discover without limits.</h2>
-            <form action="/ask" method="post" onsubmit="document.getElementById('loading').style.display='block';">
+            <form action="/ask" method="post" enctype="multipart/form-data" onsubmit="document.getElementById('loading').style.display='block';">
                 <input type="text" name="question" placeholder="What would you like to research today?" required autofocus>
+
+                <div style="margin-bottom: 24px;">
+                    <label style="color: var(--secondary-text); font-size: 14px; display: block; margin-bottom: 8px;">Research with Image (Optional)</label>
+                    <input type="file" name="image" accept="image/*" style="font-size: 14px;">
+                </div>
 
                 <div class="mode-selector">
                     <label class="mode-option active" id="mode-std">
@@ -52,6 +57,25 @@
             {% endfor %}
         </div>
         {% endif %}
+
+        <div class="glass-card" style="margin-top: 40px;">
+            <h3 style="margin-top: 0; margin-bottom: 16px;">Knowledge Vault</h3>
+            <p style="color: var(--secondary-text); font-size: 14px; margin-bottom: 20px;">Upload documents to include them in your research.</p>
+            <form action="/upload-docs" method="post" enctype="multipart/form-data">
+                <input type="file" name="files" multiple style="margin-bottom: 16px; font-size: 14px;">
+                <button type="submit" style="padding: 8px 16px; font-size: 14px; background-color: var(--accent-color); color: white;">Upload to Vault</button>
+            </form>
+            {% if docs %}
+            <div style="margin-top: 20px;">
+                <p style="font-weight: 500; font-size: 14px; margin-bottom: 8px;">In your Vault:</p>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                    {% for doc in docs %}
+                    <span style="background: var(--bg-color); border: 1px solid var(--border-color); padding: 4px 10px; border-radius: 4px; font-size: 12px;">{{ doc }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
 
         <div style="text-align: center; margin-top: 40px;">
             <p style="color: var(--secondary-text); font-size: 14px;">Powered by Ollama • C++ Core • Private by Design</p>

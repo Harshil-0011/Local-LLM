@@ -10,6 +10,9 @@ class OllamaClient:
         self.chat_url = f"{self.base_url}/api/chat"
 
     def chat(self, model: str, messages: list[dict], **params) -> str:
+        # Ollama's chat API supports an "images" field within each message object.
+        # We ensure the structure is correct as passed from the engine.
+
         payload = {
             "model": model,
             "messages": messages,

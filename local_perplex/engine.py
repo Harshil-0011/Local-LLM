@@ -13,21 +13,57 @@ class LocalPerplex:
         self.docs = DocumentManager()
         self.model = "llama3.2:8b"
 
-    def ask(self, question: str, mode: str = "industry_standard", history: list = None):
+    def ask(self, question: str, mode: str = "industry_standard", history: list = None, image_b64: str = None):
         if history is None: history = []
 
-        # 1. Search Web (Fast Scrape)
-        raw_web_sources = self.search_engine.search(question, num_results=20)
+        vision_context = ""
+        if image_b64:
+            # Use a vision-capable model (like llava or llama3-vision) if available
+            vision_prompt = [
+                {
+                    "role": "user",
+                    "content": "Describe this image in detail for a research context.",
+                    "images": [image_b64]
+                }
+            ]
+            # We assume the same model or a specific vision model handles this
+            vision_context = self.ollama.chat(self.model, vision_prompt)
+            question = f"[Image Description: {vision_context}] {question}"
 
-        # 2. C++ High-Performance Ranking
-        ranked_sources = self.cpp_engine.rank_sources(question, [
+        # 1. AI-Driven Query Refinement
+        refinement_prompt = [
+            {"role": "system", "content": "You are a research assistant. Convert the user question into an optimized search query for DuckDuckGo. Return ONLY the search string."},
+            {"role": "user", "content": question}
+        ]
+        refined_query = self.ollama.chat(self.model, refinement_prompt).strip('"').strip()
+        if not refined_query: refined_query = question
+
+        # 2. Search Web (Fast Scrape)
+        raw_web_sources = self.search_engine.search(refined_query, num_results=20)
+
+        # 3. C++ High-Performance Ranking
+        ranked_sources = self.cpp_engine.rank_sources(refined_query, [
             {"title": s["title"], "url": s["url"], "content": s["content"]}
             for s in raw_web_sources
         ])
 
-        # 3. Select sources
-        limit = 10 if mode == "industry_standard" else 20
-        selected = ranked_sources[:limit]
+        # 4. LLM-Based Source Filtering (Better Site selection)
+        # We take top 15 and ask LLM to pick the best 5-10
+        filter_prompt = [
+            {"role": "system", "content": "Pick the most credible and relevant sources from the list for the research question. Return only the URLs, one per line."},
+            {"role": "user", "content": f"Question: {question}\nSources:\n" + "\n".join([f"{s.title} ({s.url})" for s in ranked_sources[:15]])}
+        ]
+        best_urls = self.ollama.chat(self.model, filter_prompt).split("\n")
+        best_urls = [u.strip() for u in best_urls if u.strip()]
+
+        selected = []
+        for s in ranked_sources:
+            if any(u in s.url for u in best_urls):
+                selected.append(s)
+
+        if not selected: # Fallback if filtering fails
+             limit = 10 if mode == "industry_standard" else 20
+             selected = ranked_sources[:limit]
 
         # 4. Synthesize Context
         context = "\n\n".join([f"Source: {s.url}\nContent: {s.content[:2500]}" for s in selected])
