@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>Code Generation</h1>
+    <p>Output Directory: {{ output_dir }}</p>
+
+    <div class="alert alert-success">
+        Code generation started! Check the output directory for files.
+    </div>
+
+    <div class="mt-4">
+        <a href="/" class="btn btn-primary">Go to Home</a>
+        <a href="/interview?output_dir={{ output_dir }}" class="btn btn-secondary">Go to Interview</a>
+    </div>
+{% endblock %}

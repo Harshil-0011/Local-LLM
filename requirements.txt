@@ -1,0 +1,9 @@
+requests
+pyyaml
+click
+fastapi
+uvicorn
+jinja2
+pydantic
+pydantic-settings
+python-multipart

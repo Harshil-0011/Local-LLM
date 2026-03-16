@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "project-wizard"
+version = "0.1.0"
+description = "A local Perplexity-style project generator using Ollama"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "requests",
+    "pyyaml",
+    "click",
+    "fastapi",
+    "uvicorn",
+    "jinja2",
+    "pydantic",
+    "pydantic-settings",
+    "python-multipart"
+]
+
+[project.scripts]
+wizard = "project_wizard.ui.cli:main"
+wizard-gui = "project_wizard.ui.web.app:main"
