@@ -7,6 +7,6 @@ jinja2
 pydantic
 pydantic-settings
 python-multipart
-duckduckgo_search
+ddgs
 beautifulsoup4
 pybind11

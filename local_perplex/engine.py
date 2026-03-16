@@ -31,39 +31,59 @@ class LocalPerplex:
             question = f"[Image Description: {vision_context}] {question}"
 
         # 1. AI-Driven Query Refinement
-        refinement_prompt = [
-            {"role": "system", "content": "You are a research assistant. Convert the user question into an optimized search query for DuckDuckGo. Return ONLY the search string."},
-            {"role": "user", "content": question}
-        ]
-        refined_query = self.ollama.chat(self.model, refinement_prompt).strip('"').strip()
-        if not refined_query: refined_query = question
+        # Note: If the refinement model fails or returns empty, we use the original question.
+        try:
+            refinement_prompt = [
+                {"role": "system", "content": "You are a research assistant. Convert the user question into an optimized search query for DuckDuckGo. Return ONLY the search string."},
+                {"role": "user", "content": question}
+            ]
+            refined_query = self.ollama.chat(self.model, refinement_prompt).strip('"').strip()
+        except:
+            refined_query = question
+
+        if not refined_query or len(refined_query) < 2:
+            refined_query = question
 
         # 2. Search Web (Fast Scrape)
-        raw_web_sources = self.search_engine.search(refined_query, num_results=20)
+        raw_web_sources = []
+        try:
+            raw_web_sources = self.search_engine.search(refined_query, num_results=20)
+        except Exception as e:
+            print(f"Web search failed: {e}")
 
         # 3. C++ High-Performance Ranking
-        ranked_sources = self.cpp_engine.rank_sources(refined_query, [
-            {"title": s["title"], "url": s["url"], "content": s["content"]}
-            for s in raw_web_sources
-        ])
+        ranked_sources = []
+        if raw_web_sources:
+            try:
+                ranked_sources = self.cpp_engine.rank_sources(refined_query, [
+                    {"title": s["title"], "url": s["url"], "content": s["content"]}
+                    for s in raw_web_sources
+                ])
+            except Exception as e:
+                print(f"Ranking failed: {e}")
 
         # 4. LLM-Based Source Filtering (Better Site selection)
-        # We take top 15 and ask LLM to pick the best 5-10
-        filter_prompt = [
-            {"role": "system", "content": "Pick the most credible and relevant sources from the list for the research question. Return only the URLs, one per line."},
-            {"role": "user", "content": f"Question: {question}\nSources:\n" + "\n".join([f"{s.title} ({s.url})" for s in ranked_sources[:15]])}
-        ]
-        best_urls = self.ollama.chat(self.model, filter_prompt).split("\n")
-        best_urls = [u.strip() for u in best_urls if u.strip()]
+        # Fallback to pure C++ ranking if filtering is unreliable
+        limit = 10 if mode == "industry_standard" else 20
+        selected = ranked_sources[:limit]
 
-        selected = []
-        for s in ranked_sources:
-            if any(u in s.url for u in best_urls):
-                selected.append(s)
+        try:
+            filter_prompt = [
+                {"role": "system", "content": "Pick the most credible and relevant sources from the list for the research question. Return only the URLs, one per line."},
+                {"role": "user", "content": f"Question: {question}\nSources:\n" + "\n".join([f"{s.title} ({s.url})" for s in ranked_sources[:15]])}
+            ]
+            best_urls_raw = self.ollama.chat(self.model, filter_prompt)
+            best_urls = [u.strip() for u in best_urls_raw.split("\n") if u.strip()]
 
-        if not selected: # Fallback if filtering fails
-             limit = 10 if mode == "industry_standard" else 20
-             selected = ranked_sources[:limit]
+            if best_urls:
+                llm_selected = []
+                for s in ranked_sources:
+                    if any(u in s.url for u in best_urls):
+                        llm_selected.append(s)
+                if llm_selected:
+                    selected = llm_selected
+        except:
+            pass
 
         # 4. Synthesize Context
         context = "\n\n".join([f"Source: {s.url}\nContent: {s.content[:2500]}" for s in selected])

@@ -4,9 +4,10 @@
 #include <vector>
 #include <algorithm>
 #include <sstream>
-#include <set>
-#include <map>
+#include <cctype>
 #include <cmath>
+#include <map>
+#include <iostream>
 
 namespace py = pybind11;
 
@@ -17,70 +18,75 @@ public:
         std::string token;
         std::stringstream ss(text);
         while (ss >> token) {
-            std::transform(token.begin(), token.end(), token.begin(), ::tolower);
-            token.erase(std::remove_if(token.begin(), token.end(), [](char c) {
-                return ispunct(c) || isdigit(c);
-            }), token.end());
-            if (token.length() > 2) {
-                tokens.push_back(token);
+            std::string clean;
+            for (unsigned char c : token) {
+                if (std::isalnum(c)) clean += (char)std::tolower(c);
             }
+            if (clean.length() > 2) tokens.push_back(clean);
         }
         return tokens;
     }
 
-    static double calculate_score(const std::string& query, const std::string& content) {
+    static double calculate_relevance(const std::string& query, const std::string& content) {
         auto q_tokens = tokenize(query);
         auto c_tokens = tokenize(content);
         if (q_tokens.empty() || c_tokens.empty()) return 0.0;
 
-        std::set<std::string> q_set(q_tokens.begin(), q_tokens.end());
-        std::map<std::string, int> freq;
-        for (const auto& t : c_tokens) freq[t]++;
+        std::map<std::string, int> c_freq;
+        for (const auto& t : c_tokens) c_freq[t]++;
 
         double score = 0;
-        for (const auto& t : q_set) {
-            if (freq.count(t)) {
-                score += (1.0 + log(freq[t]));
+        for (const auto& qt : q_tokens) {
+            if (c_freq.count(qt)) {
+                score += (1.0 + std::log(c_freq[qt]));
             }
         }
-        return score / log(1.0 + c_tokens.size());
+        return score / std::log(1.0 + (double)c_tokens.size());
     }
+};
+
+struct SourceItem {
+    std::string title;
+    std::string url;
+    std::string content;
+    double relevance;
 };
 
 class ResearchEngine {
 public:
-    struct Source {
-        std::string title;
-        std::string url;
-        std::string content;
-        double relevance;
-    };
+    ResearchEngine() {}
 
-    std::vector<Source> rank_sources(const std::string& query, std::vector<std::map<std::string, std::string>> raw_sources) {
-        std::vector<Source> ranked;
-        for (const auto& raw : raw_sources) {
-            std::string content = raw.at("content");
-            double score = TextProcessor::calculate_score(query, content);
-            ranked.push_back({raw.at("title"), raw.at("url"), content, score});
+    std::vector<SourceItem> rank_sources(const std::string& query, py::list raw_sources) {
+        std::vector<SourceItem> ranked;
+        for (auto item : raw_sources) {
+            py::dict d = item.cast<py::dict>();
+            std::string title = d.contains("title") ? d["title"].cast<std::string>() : "";
+            std::string url = d.contains("url") ? d["url"].cast<std::string>() : "";
+            std::string content = d.contains("content") ? d["content"].cast<std::string>() : "";
+
+            double score = TextProcessor::calculate_relevance(query, content);
+            ranked.push_back({title, url, content, score});
         }
-        std::sort(ranked.begin(), ranked.end(), [](const Source& a, const Source& b) {
+
+        std::sort(ranked.begin(), ranked.end(), [](const SourceItem& a, const SourceItem& b) {
             return a.relevance > b.relevance;
         });
+
         return ranked;
     }
 };
 
 PYBIND11_MODULE(local_perplex_core, m) {
-    py::class_<ResearchEngine::Source>(m, "Source")
-        .def_readwrite("title", &ResearchEngine::Source::title)
-        .def_readwrite("url", &ResearchEngine::Source::url)
-        .def_readwrite("content", &ResearchEngine::Source::content)
-        .def_readwrite("relevance", &ResearchEngine::Source::relevance);
+    py::class_<SourceItem>(m, "Source")
+        .def_readwrite("title", &SourceItem::title)
+        .def_readwrite("url", &SourceItem::url)
+        .def_readwrite("content", &SourceItem::content)
+        .def_readwrite("relevance", &SourceItem::relevance);
 
     py::class_<ResearchEngine>(m, "ResearchEngine")
         .def(py::init<>())
         .def("rank_sources", &ResearchEngine::rank_sources);
 
-    m.def("calculate_score", &TextProcessor::calculate_score);
+    m.def("calculate_score", &TextProcessor::calculate_relevance);
     m.def("tokenize", &TextProcessor::tokenize);
 }

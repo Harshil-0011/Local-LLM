@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC -flto=auto -shared  -o local_perplex_core.cpython-312-x86_64-linux-gnu.so CMakeFiles/local_perplex_core.dir/src/core.cpp.o

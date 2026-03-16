@@ -1,0 +1,3 @@
+/app/build/CMakeFiles/local_perplex_core.dir
+/app/build/CMakeFiles/edit_cache.dir
+/app/build/CMakeFiles/rebuild_cache.dir
