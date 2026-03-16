@@ -15,7 +15,7 @@
 
         <div class="glass-card">
             <h2 style="margin-top: 0; margin-bottom: 24px;">Discover without limits.</h2>
-            <form action="/ask" method="post">
+            <form action="/ask" method="post" onsubmit="document.getElementById('loading').style.display='block';">
                 <input type="text" name="question" placeholder="What would you like to research today?" required autofocus>
 
                 <div class="mode-selector">
@@ -31,6 +31,12 @@
 
                 <button type="submit" style="width: 100%; font-size: 18px; padding: 16px;">Ask AI</button>
             </form>
+            <div id="loading" class="loading" style="margin-top: 30px;">
+                <div class="shimmer" style="width: 100%;"></div>
+                <div class="shimmer" style="width: 80%;"></div>
+                <div class="shimmer" style="width: 90%;"></div>
+                <p style="color: var(--secondary-text); margin-top: 15px;">Deep searching and analyzing...</p>
+            </div>
         </div>
 
         {% if history %}

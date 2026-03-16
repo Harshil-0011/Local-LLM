@@ -8,13 +8,51 @@
 </head>
 <body>
     <div class="container">
-        <header style="margin-bottom: 40px;">
-            <a href="/" style="color: var(--secondary-text); text-decoration: none; font-size: 14px;">← New Research</a>
-            <h2 style="margin-top: 20px; font-size: 28px;">{{ question }}</h2>
+        <header style="margin-bottom: 40px; display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+                <a href="/" style="color: var(--secondary-text); text-decoration: none; font-size: 14px;">← New Research</a>
+                <h2 style="margin-top: 20px; font-size: 28px;">{{ question }}</h2>
+            </div>
+            <a href="/export/0" class="btn" style="padding: 8px 16px; font-size: 14px; margin-top: 36px;">Export MD</a>
         </header>
+
+        {% if history_list %}
+            {% for h in history_list[:-1] %}
+                <div class="glass-card" style="opacity: 0.7; margin-bottom: 24px;">
+                    <div style="font-weight: 600; font-size: 20px; margin-bottom: 12px;">{{ h.question }}</div>
+                    <div style="font-size: 16px; line-height: 1.6; color: var(--secondary-text);">{{ h.answer[:300] }}...</div>
+                </div>
+            {% endfor %}
+        {% endif %}
 
         <div class="glass-card">
             <div style="font-size: 18px; line-height: 1.6; white-space: pre-wrap;">{{ answer }}</div>
+        </div>
+
+        {% if related %}
+        <div style="margin-top: 32px;">
+            <h4 style="margin-bottom: 16px; color: var(--secondary-text);">Related</h4>
+            <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                {% for r in related %}
+                <form action="/ask" method="post" style="margin: 0;">
+                    <input type="hidden" name="mode" value="{{ mode or 'industry_standard' }}">
+                    <input type="hidden" name="conversation_history" value="{{ conversation_history or '' }}">
+                    <input type="hidden" name="question" value="{{ r }}">
+                    <button type="submit" class="mode-option" style="background: none; text-align: left;">{{ r }}</button>
+                </form>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="glass-card" style="margin-top: 40px;">
+            <h3 style="margin-top: 0; margin-bottom: 20px;">Follow-up Research</h3>
+            <form action="/ask" method="post">
+                <input type="hidden" name="mode" value="{{ mode or 'industry_standard' }}">
+                <input type="hidden" name="conversation_history" value="{{ conversation_history or '' }}">
+                <input type="text" name="question" placeholder="Deepen your research on this topic..." required>
+                <button type="submit" style="width: 100%;">Research Further</button>
+            </form>
         </div>
 
         <h3 style="margin-top: 60px; margin-bottom: 24px;">Sources ({{ sources|length }})</h3>

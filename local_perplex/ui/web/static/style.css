@@ -80,6 +80,26 @@ button:hover {
     opacity: 0.8;
 }
 
+.loading {
+    display: none;
+    text-align: center;
+    margin-top: 20px;
+}
+
+.shimmer {
+    background: linear-gradient(90deg, var(--card-bg) 25%, var(--border-color) 50%, var(--card-bg) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    height: 20px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
 .source-item {
     border-bottom: 1px solid var(--border-color);
     padding: 12px 0;

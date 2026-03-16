@@ -3,9 +3,9 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "project-wizard"
-version = "0.1.0"
-description = "A local Perplexity-style project generator using Ollama"
+name = "local-perplex"
+version = "1.0.0"
+description = "A premium local alternative to Perplexity AI"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
@@ -24,5 +24,5 @@ dependencies = [
 ]
 
 [project.scripts]
-wizard = "project_wizard.ui.cli:main"
-wizard-gui = "project_wizard.ui.web.app:main"
+perplex = "local_perplex.ui.cli:main"
+perplex-gui = "local_perplex.ui.web.app:main"

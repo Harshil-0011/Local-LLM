@@ -6,6 +6,9 @@ A completely local alternative to Perplexity AI, better in every way. Private, s
 - **Minimalist Design**: A premium UI inspired by Apple, Nothing, and Google.
 - **C++ Core**: High-performance relevance ranking and text processing.
 - **Research History**: Save and revisit your research sessions.
+- **Conversational Research**: Ask follow-up questions to deepen your understanding.
+- **Local Document RAG**: Drop .txt or .md files into the `documents/` folder to include them in your research.
+- **Research Export**: Export your findings as professional Markdown reports.
 - **Dual Research Modes**:
   - *Industry Standard*: Concise, focused synthesis.
   - *All References*: Deep, exhaustive detail with every possible citation.
