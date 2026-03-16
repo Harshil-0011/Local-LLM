@@ -17,7 +17,10 @@ dependencies = [
     "jinja2",
     "pydantic",
     "pydantic-settings",
-    "python-multipart"
+    "python-multipart",
+    "ell-ai[all]",
+    "duckduckgo_search",
+    "beautifulsoup4"
 ]
 
 [project.scripts]

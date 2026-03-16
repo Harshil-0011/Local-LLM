@@ -11,6 +11,7 @@ from ...config import get_config
 from ...interview.manager import InterviewManager
 from ...spec.builder import SpecBuilder
 from ...codegen.generator import CodeGenerator
+from ...perplexity import PerplexityService
 
 app = FastAPI()
 templates = Jinja2Templates(directory=os.path.join(os.path.dirname(__file__), "templates"))
@@ -21,6 +22,22 @@ config = get_config()
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request, "config": config})
+
+@app.get("/search", response_class=HTMLResponse)
+async def search_get(request: Request):
+    return templates.TemplateResponse("search.html", {"request": request})
+
+@app.post("/search", response_class=HTMLResponse)
+def search_post(request: Request, question: str = Form(...), mode: str = Form(...)):
+    service = PerplexityService()
+    sources = service.search_and_read(question, num_sources=20, mode=mode)
+    answer = service.answer_question(question, sources, mode=mode)
+    return templates.TemplateResponse("search_result.html", {
+        "request": request,
+        "question": question,
+        "answer": answer,
+        "sources": sources
+    })
 
 @app.get("/interview", response_class=HTMLResponse)
 async def interview_get(request: Request, output_dir: str = None):

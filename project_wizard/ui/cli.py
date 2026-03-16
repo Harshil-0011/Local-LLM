@@ -6,6 +6,7 @@ from ..config import get_config
 from ..interview.manager import InterviewManager
 from ..spec.builder import SpecBuilder
 from ..codegen.generator import CodeGenerator
+from ..perplexity import PerplexityService
 
 @click.group()
 @click.option('--config', type=click.Path(), help='Custom config file path.')
@@ -93,6 +94,27 @@ def full_run(ctx, output, dry_run):
         ctx.invoke(build_spec, output=output)
         if click.confirm("Proceed to generate code?"):
             ctx.invoke(generate_code, output=output, dry_run=dry_run)
+
+@cli.command()
+@click.argument('question')
+@click.option('--sources', default=20, help='Number of sources to search.')
+@click.option('--mode', type=click.Choice(['industry_standard', 'all_references']), default='industry_standard')
+@click.pass_context
+def search(ctx, question, sources, mode):
+    """Search and answer a question like Perplexity AI."""
+    config = ctx.obj['config']
+    service = PerplexityService()
+
+    click.echo(f"Searching for: {question}...")
+    found_sources = service.search_and_read(question, num_sources=sources, mode=mode)
+    click.echo(f"Found and read {len(found_sources)} sources.")
+
+    click.echo("Generating answer...")
+    answer = service.answer_question(question, found_sources, mode=mode)
+
+    click.echo("\n--- ANSWER ---")
+    click.echo(answer)
+    click.echo("--------------")
 
 def main():
     cli(obj={})
