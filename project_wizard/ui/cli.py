@@ -92,7 +92,7 @@ def full_run(ctx, output, dry_run):
     if click.confirm("Proceed to build specification?"):
         ctx.invoke(build_spec, output=output)
         if click.confirm("Proceed to generate code?"):
-            ctx.invoke(generate_code, output=output)
+            ctx.invoke(generate_code, output=output, dry_run=dry_run)
 
 def main():
     cli(obj={})

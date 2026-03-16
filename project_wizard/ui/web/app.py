@@ -3,6 +3,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
+from urllib.parse import quote_plus
 import uvicorn
 import os
 
@@ -44,7 +45,7 @@ async def interview_post(request: Request):
         if val is not None:
             manager.update_answer(q['id'], val)
 
-    return RedirectResponse(url=f"/spec?output_dir={output_dir}", status_code=303)
+    return RedirectResponse(url=f"/spec?output_dir={quote_plus(str(output_dir))}", status_code=303)
 
 @app.get("/spec", response_class=HTMLResponse)
 async def spec_get(request: Request, output_dir: str):
@@ -68,7 +69,7 @@ async def build_spec_post(output_dir: str = Form(...)):
     builder = SpecBuilder(config.ollama_base_url, config.planner_model)
     spec_content = builder.build_spec(manager.answers)
     builder.save_spec(out, spec_content)
-    return RedirectResponse(url=f"/spec?output_dir={output_dir}", status_code=303)
+    return RedirectResponse(url=f"/spec?output_dir={quote_plus(str(output_dir))}", status_code=303)
 
 @app.get("/codegen", response_class=HTMLResponse)
 async def codegen_get(request: Request, output_dir: str):
@@ -87,7 +88,7 @@ async def generate_code_post(output_dir: str = Form(...)):
     generator = CodeGenerator(config.ollama_base_url, config.coder_model)
     llm_output = generator.generate_code(spec_content)
     generator.parse_and_save(out, llm_output)
-    return RedirectResponse(url=f"/codegen?output_dir={output_dir}", status_code=303)
+    return RedirectResponse(url=f"/codegen?output_dir={quote_plus(str(output_dir))}", status_code=303)
 
 @app.get("/settings", response_class=HTMLResponse)
 async def settings_get(request: Request):
