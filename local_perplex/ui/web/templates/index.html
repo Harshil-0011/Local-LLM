@@ -19,7 +19,7 @@
                 <input type="text" name="question" placeholder="What would you like to research today?" required autofocus>
 
                 <div style="margin-bottom: 24px;">
-                    <label style="color: var(--secondary-text); font-size: 14px; display: block; margin-bottom: 8px;">Research with Image (Optional)</label>
+                    <label style="color: var(--secondary-text); font-size: 14px; display: block; margin-bottom: 8px;">Unlimited Image Research (Built-in)</label>
                     <input type="file" name="image" accept="image/*" style="font-size: 14px;">
                 </div>
 
@@ -60,7 +60,7 @@
                     </label>
                     <label class="mode-option" id="mode-pro">
                         <input type="radio" name="mode" value="pro" style="display: none;">
-                        Pro Search
+                        Deep Research
                     </label>
                 </div>
 
@@ -95,7 +95,7 @@
 
         <div class="glass-card" style="margin-top: 40px;">
             <h3 style="margin-top: 0; margin-bottom: 16px;">Knowledge Vault</h3>
-            <p style="color: var(--secondary-text); font-size: 14px; margin-bottom: 20px;">Upload documents to include them in your research.</p>
+            <p style="color: var(--secondary-text); font-size: 14px; margin-bottom: 20px;">Include your private documents (PDF, Word, Excel) in your research sessions.</p>
             <form action="/upload-docs" method="post" enctype="multipart/form-data">
                 <input type="file" name="files" multiple style="margin-bottom: 16px; font-size: 14px;">
                 <button type="submit" style="padding: 8px 16px; font-size: 14px; background-color: var(--accent-color); color: white;">Upload to Vault</button>

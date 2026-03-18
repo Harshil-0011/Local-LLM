@@ -6,11 +6,15 @@ from fastapi.staticfiles import StaticFiles
 from local_perplex.engine import LocalPerplex
 import uvicorn
 import os
+import uuid
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="local_perplex/ui/web/static"), name="static")
 templates = Jinja2Templates(directory="local_perplex/ui/web/templates")
 engine = LocalPerplex()
+
+# Server-side context cache to avoid 414 URI Too Large errors
+context_cache = {}
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
@@ -40,14 +44,16 @@ async def settings_post(model: str = Form(...)):
 async def upload_docs(files: list[UploadFile] = File(...)):
     for file in files:
         content = await file.read()
-        fname = file.filename.lower()
+        if not file.filename: continue
+        safe_filename = os.path.basename(file.filename)
+        fname = safe_filename.lower()
         if fname.endswith(('.pdf', '.docx', '.xlsx', '.csv')):
-            with open(engine.docs.doc_dir / file.filename, "wb") as f:
+            with open(engine.docs.doc_dir / safe_filename, "wb") as f:
                 f.write(content)
         else:
             try:
                 text = content.decode('utf-8')
-                engine.docs.add_document(file.filename, text)
+                engine.docs.add_document(safe_filename, text)
             except: continue
     return RedirectResponse(url="/", status_code=303)
 
@@ -86,23 +92,50 @@ async def ask(
     if privacy_mode:
         tag = "[INCOGNITO]"
 
+    import json
+    sources_json = json.dumps([{"title": s.title, "url": s.url, "relevance": s.relevance, "category": s.category, "content": s.content} for s in sources])
+
+    # Generate a session ID to store the large context on the server
+    session_id = str(uuid.uuid4())
+    context_cache[session_id] = {
+        "context": context,
+        "sources_json": sources_json,
+        "history_json": conversation_history
+    }
+
     return templates.TemplateResponse("result.html", {
         "request": request,
         "question": question,
         "sources": sources,
+        "sources_json": sources_json,
         "mode": mode,
         "focus_mode": focus_mode,
         "conversation_history": conversation_history,
         "history_list": history,
-        "context_for_stream": context,
+        "context_session_id": session_id,
         "tag": tag,
-        "privacy_mode": privacy_mode
+        "privacy_mode": privacy_mode,
+        "current_session_index": len(history)
     })
 
 @app.get("/stream-answer")
-async def stream_answer(question: str, context: str, mode: str, history_json: str = "", tag: str = "General"):
+async def stream_answer(question: str, session_id: str, mode: str, tag: str = "General"):
     import json
+    cached = context_cache.get(session_id)
+    if not cached:
+        raise HTTPException(status_code=404, detail="Research session expired")
+
+    context = cached["context"]
+    sources_json = cached["sources_json"]
+    history_json = cached["history_json"]
+
     history = json.loads(history_json) if history_json else []
+    sources_data = json.loads(sources_json)
+
+    # Reconstruct source objects for finalize_research
+    from collections import namedtuple
+    Source = namedtuple('Source', ['title', 'url', 'relevance', 'category', 'content'])
+    sources = [Source(**s) for s in sources_data]
 
     def generator():
         full_answer = ""
@@ -111,7 +144,7 @@ async def stream_answer(question: str, context: str, mode: str, history_json: st
             yield f"data: {json.dumps({'chunk': chunk})}\n\n"
 
         # Finalize
-        related = engine.finalize_research(question, full_answer, [], tag) # Simplified sources for now
+        related = engine.finalize_research(question, full_answer, sources, tag)
         yield f"data: {json.dumps({'done': True, 'related': related})}\n\n"
 
     return StreamingResponse(generator(), media_type="text/event-stream")
@@ -141,7 +174,8 @@ async def view_history(request: Request, index: int):
             "request": request,
             "question": session["question"],
             "answer": session["answer"],
-            "sources": session["sources"]
+            "sources": session["sources"],
+            "current_session_index": index
         })
     return RedirectResponse(url="/", status_code=303)
 

@@ -11,7 +11,7 @@ class LocalPerplex:
         self.ollama = OllamaClient("http://localhost:11434")
         self.history = HistoryManager()
         self.docs = DocumentManager()
-        self.model = "llama3.2:8b"
+        self.model = "llama3.2-vision"
 
     def deep_research_step(self, question: str, mode: str = "pro"):
         """Agentic multi-step research."""
@@ -66,6 +66,13 @@ class LocalPerplex:
         messages.append({"role": "user", "content": f"Context:\n{context}\n\nQuestion: {question}"})
 
         return self.ollama.chat(self.model, messages, stream=True)
+
+    def ask(self, question: str, context: str, history: list = None, mode: str = "industry_standard") -> str:
+        """Synchronous version of ask_stream for CLI and simpler use cases."""
+        answer = ""
+        for chunk in self.ask_stream(question, context, history, mode):
+            answer += chunk
+        return answer
 
     def finalize_research(self, question: str, answer: str, selected: list, tag: str = "General"):
         if tag != "[INCOGNITO]":

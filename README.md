@@ -1,10 +1,12 @@
-# 🏛️ Local Perplex — The Definitive Private Research Engine
+# 🏛️ Local Perplex — The Private AI Research Engine
 
 [![Privacy First](https://img.shields.io/badge/Privacy-100%25%20Local-green?style=for-the-badge&logo=shield)](https://github.com/)
 [![High Performance](https://img.shields.io/badge/Engine-C%2B%2B%20Native-blue?style=for-the-badge&logo=c%2B%2B)](https://github.com/)
 [![Multimodal](https://img.shields.io/badge/Vision-Active-orange?style=for-the-badge&logo=openai)](https://github.com/)
 
-**Local Perplex** is a premium, privacy-obsessed alternative to Perplexity AI. It combines a high-speed **C++ Core** with **Ollama's** local intelligence to deliver a world-class research experience entirely on your hardware. No cloud, no tracking, no compromises.
+**Local Perplex** is the privacy-focused alternative to Perplexity AI. It combines a high-speed **C++ Core** with **Ollama's** local intelligence to deliver a world-class research experience entirely on your hardware. No cloud, no tracking, no compromises.
+
+All features are included by default.
 
 ---
 
@@ -19,15 +21,15 @@
 
 ---
 
-## ✨ Pro Features
+## ✨ Included Features
 
-### 👁️ Visual Research
-Initiate research sessions using images. Upload diagrams, photos, or documents to provide instant visual context to your queries.
+### 👁️ Unlimited Visual Research
+Initiate research sessions using images with no limits. Upload diagrams, photos, or documents to provide instant visual context to your queries.
 
 ### 🧠 AI-Driven Query Refinement
 Our engine doesn't just search; it thinks. It optimizes your natural language into professional search queries for superior site selection.
 
-### 🏢 Knowledge Vault Pro
+### 🏢 Knowledge Vault
 Research across your private library. Full support for **PDF, Word, Excel, CSV, and Markdown**. Your local data is indexed and synthesized alongside web results.
 
 ### ⚡ C++ High-Performance Ranking
@@ -48,7 +50,7 @@ Research sensitive topics without a trace. Bypasses history, logging, and disk p
    ```
 3. **Install & Run**:
    ```bash
-   pip install -r requirements.txt
+   pip install -e .
    perplex-gui
    ```
 

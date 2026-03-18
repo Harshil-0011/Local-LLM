@@ -21,9 +21,14 @@ dependencies = [
     "duckduckgo_search",
     "beautifulsoup4",
     "pybind11",
-    "pypdf"
+    "pypdf",
+    "python-docx",
+    "openpyxl"
 ]
 
 [project.scripts]
 perplex = "local_perplex.ui.cli:main"
 perplex-gui = "local_perplex.ui.web.app:main"
+
+[tool.setuptools.package-data]
+"local_perplex.ui.web" = ["templates/*.html", "static/*.css"]

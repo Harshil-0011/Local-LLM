@@ -51,5 +51,6 @@ class DocumentManager:
         return "\n\n".join(context)
 
     def add_document(self, filename: str, content: str):
-        with open(self.doc_dir / filename, "w", encoding="utf-8") as f:
+        safe_filename = os.path.basename(filename)
+        with open(self.doc_dir / safe_filename, "w", encoding="utf-8") as f:
             f.write(content)

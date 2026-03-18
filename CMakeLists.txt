@@ -21,3 +21,6 @@ set(pybind11_DIR ${PYBIND11_CMAKEDIR})
 find_package(pybind11 REQUIRED)
 
 pybind11_add_module(local_perplex_core src/core.cpp)
+
+# Ensure the module is placed in the local_perplex package directory
+set_target_properties(local_perplex_core PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/local_perplex)
