@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request, Form, File, UploadFile
-from fastapi.responses import HTMLResponse, RedirectResponse, PlainTextResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, PlainTextResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from local_perplex.engine import LocalPerplex
@@ -45,24 +45,36 @@ async def ask(request: Request, question: str = Form(...), mode: str = Form(...)
         content = await image.read()
         image_b64 = base64.b64encode(content).decode('utf-8')
 
-    answer, sources, related, perf = engine.ask(question, mode=mode, history=history, image_b64=image_b64, tag=tag)
-
-    # Update history for next follow-up
-    history.append({"question": question, "answer": answer})
-    import json
-    new_history_json = json.dumps(history)
+    # Step 1: Research (Fast)
+    refined_q, sources, context = engine.research_step(question, mode=mode, image_b64=image_b64)
 
     return templates.TemplateResponse("result.html", {
         "request": request,
         "question": question,
-        "answer": answer,
         "sources": sources,
         "mode": mode,
-        "conversation_history": new_history_json,
+        "conversation_history": conversation_history,
         "history_list": history,
-        "related": related,
-        "perf": perf
+        "context_for_stream": context,
+        "tag": tag
     })
+
+@app.get("/stream-answer")
+async def stream_answer(question: str, context: str, mode: str, history_json: str = "", tag: str = "General"):
+    import json
+    history = json.loads(history_json) if history_json else []
+
+    def generator():
+        full_answer = ""
+        for chunk in engine.ask_stream(question, context, history, mode):
+            full_answer += chunk
+            yield f"data: {json.dumps({'chunk': chunk})}\n\n"
+
+        # Finalize
+        related = engine.finalize_research(question, full_answer, [], tag) # Simplified sources for now
+        yield f"data: {json.dumps({'done': True, 'related': related})}\n\n"
+
+    return StreamingResponse(generator(), media_type="text/event-stream")
 
 @app.get("/export/{index}", response_class=PlainTextResponse)
 async def export_research(index: int):
