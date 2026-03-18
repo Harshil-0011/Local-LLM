@@ -25,6 +25,29 @@ class DocumentManager:
                         content += reader.pages[i].extract_text() + " "
                     context.append(f"Local PDF: {file.name}\nContent: {content[:3000]}")
                 except Exception: continue
+            elif ext == ".docx":
+                try:
+                    import docx
+                    doc = docx.Document(file)
+                    content = "\n".join([p.text for p in doc.paragraphs])
+                    context.append(f"Local Word Doc: {file.name}\nContent: {content[:3000]}")
+                except Exception: continue
+            elif ext == ".xlsx":
+                try:
+                    import openpyxl
+                    wb = openpyxl.load_workbook(file, data_only=True)
+                    ws = wb.active
+                    content = ""
+                    for row in ws.iter_rows(max_row=50, values_only=True):
+                        content += ",".join([str(c) for c in row if c is not None]) + "\n"
+                    context.append(f"Local Excel (Data): {file.name}\nContent: {content[:4000]}")
+                except Exception: continue
+            elif ext == ".csv":
+                 try:
+                    with open(file, "r", encoding="utf-8") as f:
+                        content = f.read()
+                        context.append(f"Local CSV (Data): {file.name}\nContent: {content[:4000]}")
+                 except Exception: continue
         return "\n\n".join(context)
 
     def add_document(self, filename: str, content: str):

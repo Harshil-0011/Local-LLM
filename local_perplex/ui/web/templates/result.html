@@ -27,6 +27,15 @@
 
         <div class="glass-card">
             <div id="streaming-answer" style="font-size: 18px; line-height: 1.6; white-space: pre-wrap;">{{ answer or 'Thinking...' }}</div>
+
+            <div style="margin-top: 24px; display: flex; gap: 10px;">
+                <button onclick="window.location.reload();" style="padding: 6px 12px; font-size: 12px; background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color);">Re-ask (Standard)</button>
+                <form action="/ask" method="post" style="margin: 0;">
+                    <input type="hidden" name="question" value="{{ question }}">
+                    <input type="hidden" name="mode" value="pro">
+                    <button type="submit" style="padding: 6px 12px; font-size: 12px; background: var(--text-color); color: var(--bg-color);">Re-ask (Pro)</button>
+                </form>
+            </div>
         </div>
 
         <div id="related-section" style="margin-top: 32px; display: none;">
@@ -38,6 +47,7 @@
             <h3 style="margin-top: 0; margin-bottom: 20px;">Follow-up Research</h3>
             <form action="/ask" method="post">
                 <input type="hidden" name="mode" value="{{ mode or 'industry_standard' }}">
+                <input type="hidden" name="focus_mode" value="{{ focus_mode or 'All' }}">
                 <input type="hidden" name="conversation_history" value="{{ conversation_history or '' }}">
                 <input type="text" name="question" placeholder="Deepen your research on this topic..." required>
                 <button type="submit" style="width: 100%;">Research Further</button>
@@ -94,6 +104,7 @@
                         form.method = 'post';
                         form.innerHTML = `
                             <input type="hidden" name="mode" value="{{ mode }}">
+                            <input type="hidden" name="focus_mode" value="{{ focus_mode }}">
                             <input type="hidden" name="question" value="${r}">
                             <button type="submit" class="mode-option" style="background: none; text-align: left;">${r}</button>
                         `;

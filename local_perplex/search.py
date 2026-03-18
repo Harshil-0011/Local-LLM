@@ -30,9 +30,23 @@ class SearchEngine:
             pass
         return None
 
-    def search(self, query: str, num_results: int = 20):
+    def search(self, query: str, num_results: int = 20, focus_mode: str = "All"):
         sources = []
         results = []
+
+        # Decorate query based on focus mode
+        if focus_mode == "Academic":
+            query = f"{query} site:arxiv.org OR site:scholar.google.com OR site:researchgate.net"
+        elif focus_mode == "Reddit":
+            query = f"{query} site:reddit.com"
+        elif focus_mode == "YouTube":
+            query = f"{query} site:youtube.com"
+        elif focus_mode == "Technical":
+            query = f"{query} site:github.com OR site:stackoverflow.com OR site:docs.microsoft.com"
+        elif focus_mode == "Writing":
+            num_results = 0 # No search needed for pure writing mode
+        elif focus_mode == "Computational":
+            query = f"{query} site:wolframalpha.com OR site:wikipedia.org"
 
         # Try multiple times or fallback
         for attempt in range(3):

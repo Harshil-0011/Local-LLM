@@ -15,14 +15,28 @@ engine = LocalPerplex()
 async def index(request: Request):
     history = engine.history.get_all_sessions()
     docs = [f.name for f in engine.docs.doc_dir.glob("*") if f.is_file()]
-    return templates.TemplateResponse("index.html", {"request": request, "history": history, "docs": docs})
+    return templates.TemplateResponse("index.html", {
+        "request": request,
+        "history": history,
+        "docs": docs,
+        "current_model": engine.model
+    })
+
+@app.get("/settings", response_class=HTMLResponse)
+async def settings_get(request: Request):
+    return templates.TemplateResponse("settings.html", {"request": request, "model": engine.model})
+
+@app.post("/settings")
+async def settings_post(model: str = Form(...)):
+    engine.model = model
+    return RedirectResponse(url="/", status_code=303)
 
 @app.post("/upload-docs")
 async def upload_docs(files: list[UploadFile] = File(...)):
     for file in files:
         content = await file.read()
-        if file.filename.lower().endswith('.pdf'):
-            # Save binary PDF
+        fname = file.filename.lower()
+        if fname.endswith(('.pdf', '.docx', '.xlsx', '.csv')):
             with open(engine.docs.doc_dir / file.filename, "wb") as f:
                 f.write(content)
         else:
@@ -33,7 +47,7 @@ async def upload_docs(files: list[UploadFile] = File(...)):
     return RedirectResponse(url="/", status_code=303)
 
 @app.post("/ask", response_class=HTMLResponse)
-async def ask(request: Request, question: str = Form(...), mode: str = Form(...), conversation_history: str = Form(""), image: UploadFile = File(None), tag: str = Form("General")):
+async def ask(request: Request, question: str = Form(...), mode: str = Form(...), focus_mode: str = Form("All"), conversation_history: str = Form(""), image: UploadFile = File(None), tag: str = Form("General")):
     history = []
     if conversation_history:
         import json
@@ -45,14 +59,18 @@ async def ask(request: Request, question: str = Form(...), mode: str = Form(...)
         content = await image.read()
         image_b64 = base64.b64encode(content).decode('utf-8')
 
-    # Step 1: Research (Fast)
-    refined_q, sources, context = engine.research_step(question, mode=mode, image_b64=image_b64)
+    # Step 1: Research (Fast or Deep)
+    if mode == "pro":
+        refined_q, sources, context = engine.deep_research_step(question, mode=mode)
+    else:
+        refined_q, sources, context = engine.research_step(question, mode=mode, image_b64=image_b64, focus_mode=focus_mode)
 
     return templates.TemplateResponse("result.html", {
         "request": request,
         "question": question,
         "sources": sources,
         "mode": mode,
+        "focus_mode": focus_mode,
         "conversation_history": conversation_history,
         "history_list": history,
         "context_for_stream": context,

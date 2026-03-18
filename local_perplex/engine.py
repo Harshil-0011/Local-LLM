@@ -13,7 +13,24 @@ class LocalPerplex:
         self.docs = DocumentManager()
         self.model = "llama3.2:8b"
 
-    def research_step(self, question: str, mode: str = "industry_standard", image_b64: str = None):
+    def deep_research_step(self, question: str, mode: str = "pro"):
+        """Agentic multi-step research."""
+        # 1. Plan
+        plan_prompt = [{"role": "system", "content": "Create a 3-step research plan for this question. One objective per line."}, {"role": "user", "content": question}]
+        plan = self.ollama.chat(self.model, plan_prompt).split("\n")
+
+        all_selected = []
+        full_context = ""
+
+        for step in plan[:3]:
+            if not step.strip(): continue
+            _, selected, context = self.research_step(step.strip(), mode="all_references")
+            all_selected.extend(selected)
+            full_context += f"\n--- STEP: {step} ---\n{context}\n"
+
+        return question, all_selected, full_context
+
+    def research_step(self, question: str, mode: str = "industry_standard", image_b64: str = None, focus_mode: str = "All"):
         """Perform the non-LLM synthesis steps of research."""
         vision_context = ""
         if image_b64:
@@ -26,7 +43,7 @@ class LocalPerplex:
             refined_query = self.ollama.chat(self.model, ref_prompt).strip('"')
         except: refined_query = question
 
-        raw_web_sources = self.search_engine.search(refined_query)
+        raw_web_sources = self.search_engine.search(refined_query, focus_mode=focus_mode)
         ranked = self.cpp_engine.rank_sources(refined_query, [{"title": s["title"], "url": s["url"], "content": s["content"]} for s in raw_web_sources])
 
         limit = 10 if mode == "industry_standard" else 20

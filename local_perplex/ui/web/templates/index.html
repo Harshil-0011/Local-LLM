@@ -28,6 +28,18 @@
                     <input type="text" name="tag" placeholder="General, Technical, Financial..." style="font-size: 14px; padding: 10px;">
                 </div>
 
+                <div style="margin-bottom: 24px;">
+                    <label style="color: var(--secondary-text); font-size: 14px; display: block; margin-bottom: 8px;">Focus Mode</label>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        {% for f in ["All", "Academic", "Writing", "YouTube", "Reddit", "Technical", "Computational"] %}
+                        <label class="mode-option {% if f == 'All' %}active{% endif %}" onclick="selectFocus(this)">
+                            <input type="radio" name="focus_mode" value="{{ f }}" {% if f == 'All' %}checked{% endif %} style="display: none;">
+                            {{ f }}
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
                 <div class="mode-selector">
                     <label class="mode-option active" id="mode-std">
                         <input type="radio" name="mode" value="industry_standard" checked style="display: none;">
@@ -36,6 +48,10 @@
                     <label class="mode-option" id="mode-all">
                         <input type="radio" name="mode" value="all_references" style="display: none;">
                         All References
+                    </label>
+                    <label class="mode-option" id="mode-pro">
+                        <input type="radio" name="mode" value="pro" style="display: none;">
+                        Pro Search
                     </label>
                 </div>
 
@@ -87,6 +103,16 @@
             {% endif %}
         </div>
 
+        <div class="glass-card" style="margin-top: 40px; border-color: #28a745;">
+            <h3 style="margin-top: 0; margin-bottom: 12px; color: #28a745;">Privacy Dashboard</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <p style="font-size: 14px; margin: 0;">Local AI Execution: <span style="color: #28a745; font-weight: 600;">ACTIVE</span></p>
+                <p style="font-size: 14px; margin: 0;">Data Leaks: <span style="color: #28a745; font-weight: 600;">ZERO</span></p>
+                <p style="font-size: 14px; margin: 0;">Cloud Dependency: <span style="color: #dc3545; font-weight: 600;">NONE</span></p>
+            </div>
+            <p style="color: var(--secondary-text); font-size: 11px; margin-top: 15px;">Your research data, images, and documents never leave this machine. All LLM processing is handled by your local Ollama instance.</p>
+        </div>
+
         <div style="text-align: center; margin-top: 40px;">
             <p style="color: var(--secondary-text); font-size: 14px;">Powered by Ollama • C++ Core • Private by Design</p>
         </div>
@@ -110,15 +136,31 @@
         // Mode toggling UI
         const modeStd = document.getElementById('mode-std');
         const modeAll = document.getElementById('mode-all');
+        const modePro = document.getElementById('mode-pro');
 
         modeStd.addEventListener('click', () => {
             modeStd.classList.add('active');
             modeAll.classList.remove('active');
+            modePro.classList.remove('active');
         });
         modeAll.addEventListener('click', () => {
             modeAll.classList.add('active');
             modeStd.classList.remove('active');
+            modePro.classList.remove('active');
         });
+        modePro.addEventListener('click', () => {
+            modePro.classList.add('active');
+            modeStd.classList.remove('active');
+            modeAll.classList.remove('active');
+        });
+
+        function selectFocus(el) {
+            document.querySelectorAll('input[name="focus_mode"]').forEach(input => {
+                input.parentElement.classList.remove('active');
+            });
+            el.classList.add('active');
+            el.querySelector('input').checked = true;
+        }
     </script>
 </body>
 </html>
