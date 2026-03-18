@@ -26,35 +26,13 @@
         {% endif %}
 
         <div class="glass-card">
-            <div style="font-size: 18px; line-height: 1.6; white-space: pre-wrap;">{{ answer }}</div>
-
-            {% if perf %}
-            <div style="margin-top: 24px; display: flex; gap: 15px; border-top: 1px solid var(--border-color); padding-top: 15px;">
-                <div style="font-size: 10px; color: var(--secondary-text);">
-                    <span style="font-weight: 600;">LATENCY</span> {{ "%.2f"|format(perf.latency) }}s
-                </div>
-                <div style="font-size: 10px; color: var(--secondary-text);">
-                    <span style="font-weight: 600;">SPEED</span> {{ "%.1f"|format(perf.tps) }} tokens/s
-                </div>
-            </div>
-            {% endif %}
+            <div id="streaming-answer" style="font-size: 18px; line-height: 1.6; white-space: pre-wrap;">{{ answer or 'Thinking...' }}</div>
         </div>
 
-        {% if related %}
-        <div style="margin-top: 32px;">
+        <div id="related-section" style="margin-top: 32px; display: none;">
             <h4 style="margin-bottom: 16px; color: var(--secondary-text);">Related</h4>
-            <div style="display: flex; flex-wrap: wrap; gap: 10px;">
-                {% for r in related %}
-                <form action="/ask" method="post" style="margin: 0;">
-                    <input type="hidden" name="mode" value="{{ mode or 'industry_standard' }}">
-                    <input type="hidden" name="conversation_history" value="{{ conversation_history or '' }}">
-                    <input type="hidden" name="question" value="{{ r }}">
-                    <button type="submit" class="mode-option" style="background: none; text-align: left;">{{ r }}</button>
-                </form>
-                {% endfor %}
-            </div>
+            <div id="related-questions" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
         </div>
-        {% endif %}
 
         <div class="glass-card" style="margin-top: 40px;">
             <h3 style="margin-top: 0; margin-bottom: 20px;">Follow-up Research</h3>
@@ -90,6 +68,41 @@
         const body = document.body;
         const savedTheme = localStorage.getItem('theme') || 'light';
         body.setAttribute('data-theme', savedTheme);
+
+        {% if context_for_stream %}
+        const streamUrl = `/stream-answer?question={{ question|urlencode }}&context={{ context_for_stream|urlencode }}&mode={{ mode }}&history_json={{ conversation_history|urlencode }}&tag={{ tag }}`;
+        const eventSource = new EventSource(streamUrl);
+        const answerDiv = document.getElementById('streaming-answer');
+        let fullAnswer = "";
+
+        eventSource.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data.chunk) {
+                if (answerDiv.innerText === 'Thinking...') answerDiv.innerText = '';
+                answerDiv.innerText += data.chunk;
+                fullAnswer += data.chunk;
+            }
+            if (data.done) {
+                eventSource.close();
+                if (data.related) {
+                    const relatedSection = document.getElementById('related-section');
+                    const relatedDiv = document.getElementById('related-questions');
+                    relatedSection.style.display = 'block';
+                    data.related.forEach(r => {
+                        const form = document.createElement('form');
+                        form.action = '/ask';
+                        form.method = 'post';
+                        form.innerHTML = `
+                            <input type="hidden" name="mode" value="{{ mode }}">
+                            <input type="hidden" name="question" value="${r}">
+                            <button type="submit" class="mode-option" style="background: none; text-align: left;">${r}</button>
+                        `;
+                        relatedDiv.appendChild(form);
+                    });
+                }
+            }
+        };
+        {% endif %}
     </script>
 </body>
 </html>
