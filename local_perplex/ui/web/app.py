@@ -1,6 +1,7 @@
-from fastapi import FastAPI, Request, Form, File, UploadFile
+from fastapi import FastAPI, Request, Form, File, UploadFile, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse, PlainTextResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
+import html
 from fastapi.staticfiles import StaticFiles
 from local_perplex.engine import LocalPerplex
 import uvicorn
@@ -26,6 +27,10 @@ async def index(request: Request):
 async def settings_get(request: Request):
     return templates.TemplateResponse("settings.html", {"request": request, "model": engine.model})
 
+@app.get("/privacy", response_class=HTMLResponse)
+async def privacy_get(request: Request):
+    return templates.TemplateResponse("privacy.html", {"request": request})
+
 @app.post("/settings")
 async def settings_post(model: str = Form(...)):
     engine.model = model
@@ -47,7 +52,19 @@ async def upload_docs(files: list[UploadFile] = File(...)):
     return RedirectResponse(url="/", status_code=303)
 
 @app.post("/ask", response_class=HTMLResponse)
-async def ask(request: Request, question: str = Form(...), mode: str = Form(...), focus_mode: str = Form("All"), conversation_history: str = Form(""), image: UploadFile = File(None), tag: str = Form("General")):
+async def ask(
+    request: Request,
+    question: str = Form(...),
+    mode: str = Form(...),
+    focus_mode: str = Form("All"),
+    conversation_history: str = Form(""),
+    image: UploadFile = File(None),
+    tag: str = Form("General"),
+    privacy_mode: bool = Form(False)
+):
+    # Security: Input Sanitization
+    question = html.escape(question)
+    tag = html.escape(tag)
     history = []
     if conversation_history:
         import json
@@ -65,6 +82,10 @@ async def ask(request: Request, question: str = Form(...), mode: str = Form(...)
     else:
         refined_q, sources, context = engine.research_step(question, mode=mode, image_b64=image_b64, focus_mode=focus_mode)
 
+    # Security: Privacy Mode Handling
+    if privacy_mode:
+        tag = "[INCOGNITO]"
+
     return templates.TemplateResponse("result.html", {
         "request": request,
         "question": question,
@@ -74,7 +95,8 @@ async def ask(request: Request, question: str = Form(...), mode: str = Form(...)
         "conversation_history": conversation_history,
         "history_list": history,
         "context_for_stream": context,
-        "tag": tag
+        "tag": tag,
+        "privacy_mode": privacy_mode
     })
 
 @app.get("/stream-answer")

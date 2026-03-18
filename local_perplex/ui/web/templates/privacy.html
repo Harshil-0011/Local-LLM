@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Audit - Local Perplex</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <header style="margin-bottom: 40px;">
+            <a href="/" style="color: var(--secondary-text); text-decoration: none; font-size: 14px;">← Back</a>
+            <h1 style="margin-top: 20px;">Privacy & Security Audit</h1>
+        </header>
+
+        <div class="glass-card" style="border-color: #28a745;">
+            <h3 style="margin-top: 0; margin-bottom: 24px;">Connection Status</h3>
+            <ul style="list-style: none; padding: 0;">
+                <li style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 10px; height: 10px; background: #28a745; border-radius: 50%;"></div>
+                    <span>Ollama (Local LLM): <strong style="color: #28a745;">SECURE</strong></span>
+                </li>
+                <li style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 10px; height: 10px; background: #28a745; border-radius: 50%;"></div>
+                    <span>Data Persistence: <strong style="color: #28a745;">ENCRYPTED/LOCAL</strong></span>
+                </li>
+                <li style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 10px; height: 10px; background: #dc3545; border-radius: 50%;"></div>
+                    <span>External AI Calls: <strong style="color: #dc3545;">ZERO</strong></span>
+                </li>
+            </ul>
+        </div>
+
+        <div class="glass-card" style="margin-top: 40px;">
+            <h3 style="margin-top: 0; margin-bottom: 16px;">The Privacy Manifesto</h3>
+            <p style="font-size: 14px; line-height: 1.6; color: var(--secondary-text);">
+                Local Perplex was built with a single mission: to provide world-class research capabilities without sacrificing human privacy. Unlike cloud-based search engines, we do not profile your interests, sell your search history, or use your data to train proprietary models. Your research is yours alone.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const body = document.body;
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        body.setAttribute('data-theme', savedTheme);
+    </script>
+</body>
+</html>

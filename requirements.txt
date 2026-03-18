@@ -1,3 +1,4 @@
+duckduckgo_search
 requests
 pyyaml
 click
@@ -7,7 +8,8 @@ jinja2
 pydantic
 pydantic-settings
 python-multipart
-ddgs
 beautifulsoup4
 pybind11
 pypdf
+python-docx
+openpyxl

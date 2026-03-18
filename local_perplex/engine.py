@@ -68,7 +68,8 @@ class LocalPerplex:
         return self.ollama.chat(self.model, messages, stream=True)
 
     def finalize_research(self, question: str, answer: str, selected: list, tag: str = "General"):
-        self.history.save_session(question, answer, [{"title": s.title, "url": s.url, "relevance": s.relevance, "category": s.category, "snippet": s.content[:300]} for s in selected], tag=tag)
+        if tag != "[INCOGNITO]":
+            self.history.save_session(question, answer, [{"title": s.title, "url": s.url, "relevance": s.relevance, "category": s.category, "snippet": s.content[:300]} for s in selected], tag=tag)
 
         related_raw = self.ollama.chat(self.model, [
             {"role": "system", "content": "Suggest 3 follow-up research questions based on the answer. One per line."},
