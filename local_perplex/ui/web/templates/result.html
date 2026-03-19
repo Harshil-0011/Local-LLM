@@ -3,94 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Research Result - Local Perplex</title>
+    <title>{{ question }} - Local Perplex</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
-<body>
-    <div class="container">
-        <header style="margin-bottom: 40px; display: flex; justify-content: space-between; align-items: flex-start;">
-            <div>
-                <a href="/" style="color: var(--secondary-text); text-decoration: none; font-size: 14px;">← New Research</a>
-                <h2 style="margin-top: 20px; font-size: 28px;">{{ question }}</h2>
-            </div>
-            <a href="/export/{{ current_session_index }}" class="btn" style="padding: 8px 16px; font-size: 14px; margin-top: 36px;">Export MD</a>
-        </header>
+<body data-theme="dark">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <span class="nothing-dot"></span>
+            local perplex
+        </div>
+        <nav class="sidebar-nav">
+            <a href="/" class="nav-item">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                New Search
+            </a>
+            <a href="/history" class="nav-item active">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                History
+            </a>
+            <a href="/settings" class="nav-item">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                Settings
+            </a>
+        </nav>
+    </aside>
 
-        {% if history_list %}
-            {% for h in history_list[:-1] %}
-                <div class="glass-card" style="opacity: 0.7; margin-bottom: 24px;">
-                    <div style="font-weight: 600; font-size: 20px; margin-bottom: 12px;">{{ h.question }}</div>
-                    <div style="font-size: 16px; line-height: 1.6; color: var(--secondary-text);">{{ h.answer[:300] }}...</div>
+    <main class="main-content" style="justify-content: flex-start; align-items: stretch; overflow-x: hidden;">
+        <div style="max-width: 800px; margin: 0 auto; width: 100%;">
+            <header style="margin-bottom: 40px;">
+                <h2 style="font-size: 32px; letter-spacing: -0.04em; margin-bottom: 8px;">{{ question }}</h2>
+                <div style="display: flex; gap: 16px; align-items: center;">
+                    <a href="/export/{{ current_session_index }}" class="pill-btn" style="text-decoration: none;">Export Markdown</a>
+                    <span style="font-size: 12px; color: var(--secondary-text);">{{ focus_mode or 'All' }} Focus • {{ mode|replace('_', ' ')|title }}</span>
                 </div>
-            {% endfor %}
-        {% endif %}
+            </header>
 
-        <div class="glass-card">
-            <div id="streaming-answer" style="font-size: 18px; line-height: 1.6; white-space: pre-wrap;">{{ answer or 'Thinking...' }}</div>
+            <div class="glass-card" style="margin-bottom: 40px; border-left: 2px solid var(--text-color);">
+                <div id="streaming-answer" style="font-size: 18px; line-height: 1.7; color: var(--text-color); white-space: pre-wrap;">{{ answer or 'Thinking...' }}</div>
+            </div>
 
-            <div style="margin-top: 24px; display: flex; gap: 10px;">
-                <button onclick="window.location.reload();" style="padding: 6px 12px; font-size: 12px; background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color);">Re-ask (Standard)</button>
-                <form action="/ask" method="post" style="margin: 0;">
-                    <input type="hidden" name="question" value="{{ question }}">
-                    <input type="hidden" name="mode" value="pro">
-                    <button type="submit" style="padding: 6px 12px; font-size: 12px; background: var(--text-color); color: var(--bg-color);">Re-ask (Pro)</button>
+            <div id="related-section" style="margin-top: 40px; display: none;">
+                <h3 style="margin-bottom: 24px; font-size: 20px;">Related Questions</h3>
+                <div id="related-questions" style="display: flex; flex-direction: column; gap: 8px;"></div>
+            </div>
+
+            <h3 style="margin-top: 60px; margin-bottom: 24px; font-size: 20px;">Sources & References</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 16px;">
+                {% for s in sources %}
+                <div class="glass-card" style="padding: 16px; display: flex; flex-direction: column; gap: 8px;">
+                    <a href="{{ s.url }}" class="source-title" target="_blank" style="font-size: 15px; font-weight: 600;">{{ s.title }}</a>
+                    <div style="font-size: 12px; color: var(--secondary-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ s.url }}</div>
+                    {% if s.snippet %}
+                    <div style="font-size: 13px; color: var(--secondary-text); margin-top: 4px; line-height: 1.4;">
+                        {{ s.snippet }}...
+                    </div>
+                    {% endif %}
+                    <div style="display: flex; gap: 8px; margin-top: auto; padding-top: 8px;">
+                        <span style="font-size: 10px; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.05); color: #fff;">{{ s.category }}</span>
+                        <span style="font-size: 10px; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.05); color: #fff;">{{ "%.0f"|format(s.relevance * 100) }}% Rel.</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="glass-card" style="margin-top: 60px; background: var(--input-bg); padding: 12px;">
+                <form action="/ask" method="post">
+                    <input type="hidden" name="mode" value="{{ mode or 'industry_standard' }}">
+                    <input type="hidden" name="focus_mode" value="{{ focus_mode or 'All' }}">
+                    <input type="hidden" name="conversation_history" value="{{ conversation_history or '' }}">
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <textarea name="question" placeholder="Ask a follow-up..." style="flex: 1; background: none; border: none; color: #fff; padding: 8px; outline: none; font-size: 16px; resize: none;" rows="1" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea>
+                        <button type="submit" class="submit-btn">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
-
-        <div id="related-section" style="margin-top: 32px; display: none;">
-            <h4 style="margin-bottom: 16px; color: var(--secondary-text);">Related</h4>
-            <div id="related-questions" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
-        </div>
-
-        <div class="glass-card" style="margin-top: 40px;">
-            <h3 style="margin-top: 0; margin-bottom: 20px;">Follow-up Research</h3>
-            <form action="/ask" method="post">
-                <input type="hidden" name="mode" value="{{ mode or 'industry_standard' }}">
-                <input type="hidden" name="focus_mode" value="{{ focus_mode or 'All' }}">
-                <input type="hidden" name="conversation_history" value="{{ conversation_history or '' }}">
-                <input type="text" name="question" placeholder="Deepen your research on this topic..." required>
-                <button type="submit" style="width: 100%;">Research Further</button>
-            </form>
-        </div>
-
-        <h3 style="margin-top: 60px; margin-bottom: 24px;">Sources ({{ sources|length }})</h3>
-        <div class="glass-card">
-            {% for s in sources %}
-                <div class="source-item">
-                    <a href="{{ s.url }}" class="source-title" target="_blank">{{ s.title }}</a>
-                    <div class="source-url">{{ s.url }}</div>
-                    <div style="display: flex; gap: 10px; margin-top: 4px;">
-                        <span style="font-size: 10px; background: var(--bg-color); border: 1px solid var(--border-color); padding: 1px 6px; border-radius: 4px;">{{ s.category }}</span>
-                        <div style="font-size: 11px; color: var(--secondary-text);">Relevance: {{ "%.4f"|format(s.relevance) }}</div>
-                    </div>
-                    {% if s.snippet %}
-                    <div style="margin-top: 10px; font-size: 13px; color: var(--secondary-text); border-left: 2px solid var(--border-color); padding-left: 12px; font-style: italic;">
-                        "...{{ s.snippet }}..."
-                    </div>
-                    {% endif %}
-                </div>
-            {% endfor %}
-        </div>
-    </div>
+    </main>
 
     <script>
-        const body = document.body;
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        body.setAttribute('data-theme', savedTheme);
-
         {% if context_session_id %}
         const streamUrl = `/stream-answer?question={{ question|urlencode }}&session_id={{ context_session_id }}&mode={{ mode }}&tag={{ tag }}`;
         const eventSource = new EventSource(streamUrl);
         const answerDiv = document.getElementById('streaming-answer');
-        let fullAnswer = "";
 
         eventSource.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (data.chunk) {
                 if (answerDiv.innerText === 'Thinking...') answerDiv.innerText = '';
                 answerDiv.innerText += data.chunk;
-                fullAnswer += data.chunk;
             }
             if (data.done) {
                 eventSource.close();
@@ -106,7 +109,9 @@
                             <input type="hidden" name="mode" value="{{ mode }}">
                             <input type="hidden" name="focus_mode" value="{{ focus_mode }}">
                             <input type="hidden" name="question" value="${r}">
-                            <button type="submit" class="mode-option" style="background: none; text-align: left;">${r}</button>
+                            <button type="submit" style="background: none; border: none; color: var(--accent-color); text-align: left; padding: 8px 0; cursor: pointer; font-size: 15px; width: 100%;">
+                                ${r} <span style="font-size: 12px; opacity: 0.5;">→</span>
+                            </button>
                         `;
                         relatedDiv.appendChild(form);
                     });

@@ -1,0 +1,85 @@
+Metadata-Version: 2.4
+Name: local-perplex
+Version: 1.0.0
+Summary: A premium local alternative to Perplexity AI
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: requests
+Requires-Dist: pyyaml
+Requires-Dist: click
+Requires-Dist: fastapi
+Requires-Dist: uvicorn
+Requires-Dist: jinja2
+Requires-Dist: pydantic
+Requires-Dist: pydantic-settings
+Requires-Dist: python-multipart
+Requires-Dist: duckduckgo_search
+Requires-Dist: beautifulsoup4
+Requires-Dist: pybind11
+Requires-Dist: pypdf
+Requires-Dist: python-docx
+Requires-Dist: openpyxl
+
+# 🏛️ Local Perplex — The Private AI Research Engine
+
+[![Privacy First](https://img.shields.io/badge/Privacy-100%25%20Local-green?style=for-the-badge&logo=shield)](https://github.com/)
+[![High Performance](https://img.shields.io/badge/Engine-C%2B%2B%20Native-blue?style=for-the-badge&logo=c%2B%2B)](https://github.com/)
+[![Multimodal](https://img.shields.io/badge/Vision-Active-orange?style=for-the-badge&logo=openai)](https://github.com/)
+
+**Local Perplex** is the privacy-focused alternative to Perplexity AI. It combines a high-speed **C++ Core** with **Ollama's** local intelligence to deliver a world-class research experience entirely on your hardware. No cloud, no tracking, no compromises.
+
+All features are included by default.
+
+---
+
+## 🚀 Why Switch to Local Perplex?
+
+| Feature | Local Perplex | Cloud Alternatives |
+| :--- | :--- | :--- |
+| **Data Privacy** | 🔐 100% Local (Air-gapped compatible) | ☁️ Sent to external servers |
+| **Speed** | ⚡ C++ Native Ranking | 🐌 Network Latency dependent |
+| **Customization** | 🛠️ Any Ollama Model | 🚫 Restricted Model selection |
+| **Cost** | 💎 Permanent Free (Self-hosted) | 💳 Monthly Subscription |
+
+---
+
+## ✨ Included Features
+
+### 👁️ Unlimited Visual Research
+Initiate research sessions using images with no limits. Upload diagrams, photos, or documents to provide instant visual context to your queries.
+
+### 🧠 AI-Driven Query Refinement
+Our engine doesn't just search; it thinks. It optimizes your natural language into professional search queries for superior site selection.
+
+### 🏢 Knowledge Vault
+Research across your private library. Full support for **PDF, Word, Excel, CSV, and Markdown**. Your local data is indexed and synthesized alongside web results.
+
+### ⚡ C++ High-Performance Ranking
+Tokenization and relevance scoring for 20+ sources happen in milliseconds using our native C++ core.
+
+### 🛡️ Incognito Research
+Research sensitive topics without a trace. Bypasses history, logging, and disk persistence with a single click.
+
+---
+
+## 🛠️ Installation (Windows)
+
+1. **Prerequisites**: Install [Python 3.10+](https://python.org) and [Ollama](https://ollama.com).
+2. **Build Engine**:
+   ```bash
+   mkdir build && cd build
+   cmake .. && cmake --build . --config Release
+   ```
+3. **Install & Run**:
+   ```bash
+   pip install -e .
+   perplex-gui
+   ```
+
+---
+
+## 🎨 Premium UI Experience
+Designed with a minimalist aesthetic inspired by **Apple, Nothing, and Google**. Features shimmering animations, glassmorphism, and a seamless Dark/Light mode experience.
+
+---
+*Built for the privacy-conscious elite. Better than Perplexity, in every way.*
