@@ -6,13 +6,19 @@ from concurrent.futures import ThreadPoolExecutor
 import time
 
 class SearchEngine:
+    def __init__(self):
+        # ⚡ Bolt: Use a session for connection pooling to speed up multiple requests
+        self.session = requests.Session()
+        self.session.headers.update({
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        })
+
     def _scrape_url(self, r, query):
         url = r.get('href')
         if not url: return None
         try:
-            resp = requests.get(url, timeout=5, headers={
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-            })
+            # ⚡ Bolt: Use the shared session to benefit from HTTP Keep-Alive and connection reuse
+            resp = self.session.get(url, timeout=5)
             if resp.status_code == 200:
                 soup = BeautifulSoup(resp.text, 'html.parser')
                 # Remove script and style elements
