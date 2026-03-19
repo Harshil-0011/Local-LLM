@@ -13,22 +13,50 @@ class LocalPerplex:
         self.docs = DocumentManager()
         self.model = "llama3.2-vision"
 
-    def deep_research_step(self, question: str, mode: str = "pro"):
-        """Agentic multi-step research."""
-        # 1. Plan
-        plan_prompt = [{"role": "system", "content": "Create a 3-step research plan for this question. One objective per line."}, {"role": "user", "content": question}]
-        plan = self.ollama.chat(self.model, plan_prompt).split("\n")
+    def deep_research_iterative(self, question: str, mode: str = "pro", focus_mode: str = "All"):
+        """Yields progress steps and finally the results."""
+        yield "status", "Analyzing your request and planning research steps..."
+
+        plan_prompt = [
+            {"role": "system", "content": "You are a research planner. Generate 3 distinct, specific search queries to fully answer the user's question. Output ONLY the queries, one per line."},
+            {"role": "user", "content": question}
+        ]
+        try:
+            plan_raw = self.ollama.chat(self.model, plan_prompt)
+            queries = [q.strip("- ").strip() for q in plan_raw.split("\n") if q.strip()][:3]
+        except:
+            queries = [question]
 
         all_selected = []
         full_context = ""
+        seen_urls = set()
 
-        for step in plan[:3]:
-            if not step.strip(): continue
-            _, selected, context = self.research_step(step.strip(), mode="all_references")
-            all_selected.extend(selected)
-            full_context += f"\n--- STEP: {step} ---\n{context}\n"
+        for i, query in enumerate(queries):
+            yield "status", f"Searching for: {query}..."
 
-        return question, all_selected, full_context
+            raw_web_sources = self.search_engine.search(query, focus_mode=focus_mode)
+            # Filter duplicates
+            unique_sources = []
+            for s in raw_web_sources:
+                if s["url"] not in seen_urls:
+                    seen_urls.add(s["url"])
+                    unique_sources.append(s)
+
+            if unique_sources:
+                ranked = self.cpp_engine.rank_sources(query, [{"title": s["title"], "url": s["url"], "content": s["content"]} for s in unique_sources])
+                selected = ranked[:5] # Top 5 per query
+                all_selected.extend(selected)
+
+                context_chunk = "\n\n".join([f"Source: {s.url}\nContent: {s.content[:2000]}" for s in selected])
+                full_context += f"\n--- RESEARCH SEGMENT {i+1}: {query} ---\n{context_chunk}\n"
+
+        yield "status", "Synthesizing all gathered information..."
+
+        local_context = self.docs.get_local_context()
+        if local_context:
+            full_context = f"--- LOCAL DOCUMENTS ---\n{local_context}\n\n{full_context}"
+
+        yield "result", (question, all_selected, full_context)
 
     def research_step(self, question: str, mode: str = "industry_standard", image_b64: str = None, focus_mode: str = "All"):
         """Perform the non-LLM synthesis steps of research."""
@@ -55,9 +83,17 @@ class LocalPerplex:
 
         return question, selected, context
 
-    def ask_stream(self, question: str, context: str, history: list = None, mode: str = "industry_standard"):
-        system_prompt = "You are a premium AI researcher. Use the provided context to answer the user's question with absolute precision. Cite sources as [URL]."
-        if mode == "all_references": system_prompt += " Provide an exhaustive analysis."
+    def ask_stream(self, question: str, context: str, history: list = None, mode: str = "industry_standard", sources: list = None):
+        system_prompt = "You are a premium AI researcher. Use the provided context to answer the user's question with absolute precision. "
+
+        if sources:
+            source_map = "\n".join([f"[{i+1}] {s.url} - {s.title}" for i, s in enumerate(sources)])
+            system_prompt += f"Cite sources using numerical markers like [1], [2], etc. corresponding to these sources:\n{source_map}\n"
+        else:
+            system_prompt += "Cite sources as [URL]."
+
+        if mode == "all_references" or mode == "pro":
+            system_prompt += " Provide an exhaustive, detailed analysis with multiple sections."
 
         messages = [{"role": "system", "content": system_prompt}]
         for h in (history or []):

@@ -11,6 +11,12 @@ import uuid
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="local_perplex/ui/web/static"), name="static")
 templates = Jinja2Templates(directory="local_perplex/ui/web/templates")
+
+def split_filter(value, separator):
+    return value.split(separator)
+
+templates.env.filters["split"] = split_filter
+
 engine = LocalPerplex()
 
 # Server-side context cache to avoid 414 URI Too Large errors
@@ -83,8 +89,14 @@ async def ask(
         image_b64 = base64.b64encode(content).decode('utf-8')
 
     # Step 1: Research (Fast or Deep)
+    sources = []
+    context = ""
+    refined_q = question
+
     if mode == "pro":
-        refined_q, sources, context = engine.deep_research_step(question, mode=mode)
+        # In 'pro' mode, we'll stream research steps via the /stream-answer endpoint
+        # The /ask endpoint just sets up the session
+        pass
     else:
         refined_q, sources, context = engine.research_step(question, mode=mode, image_b64=image_b64, focus_mode=focus_mode)
 
@@ -100,7 +112,8 @@ async def ask(
     context_cache[session_id] = {
         "context": context,
         "sources_json": sources_json,
-        "history_json": conversation_history
+        "history_json": conversation_history,
+        "focus_mode": focus_mode
     }
 
     return templates.TemplateResponse("result.html", {
@@ -125,26 +138,39 @@ async def stream_answer(question: str, session_id: str, mode: str, tag: str = "G
     if not cached:
         raise HTTPException(status_code=404, detail="Research session expired")
 
-    context = cached["context"]
-    sources_json = cached["sources_json"]
     history_json = cached["history_json"]
-
     history = json.loads(history_json) if history_json else []
-    sources_data = json.loads(sources_json)
-
-    # Reconstruct source objects for finalize_research
-    from collections import namedtuple
-    Source = namedtuple('Source', ['title', 'url', 'relevance', 'category', 'content'])
-    sources = [Source(**s) for s in sources_data]
+    focus_mode = cached.get("focus_mode", "All")
 
     def generator():
+        final_sources = []
+        final_context = ""
+
+        if mode == "pro":
+            # Deep Research Loop
+            for step_type, data in engine.deep_research_iterative(question, mode=mode, focus_mode=focus_mode):
+                if step_type == "status":
+                    yield f"data: {json.dumps({'status': data})}\n\n"
+                elif step_type == "result":
+                    _, final_sources, final_context = data
+                    # Update sources on the UI
+                    sources_list = [{"title": s.title, "url": s.url, "relevance": s.relevance, "category": s.category, "content": s.content} for s in final_sources]
+                    yield f"data: {json.dumps({'update_sources': sources_list})}\n\n"
+        else:
+            final_context = cached["context"]
+            sources_data = json.loads(cached["sources_json"])
+            from collections import namedtuple
+            Source = namedtuple('Source', ['title', 'url', 'relevance', 'category', 'content'])
+            final_sources = [Source(**s) for s in sources_data]
+
         full_answer = ""
-        for chunk in engine.ask_stream(question, context, history, mode):
+        # Numerical citations need the source list
+        for chunk in engine.ask_stream(question, final_context, history, mode, sources=final_sources):
             full_answer += chunk
             yield f"data: {json.dumps({'chunk': chunk})}\n\n"
 
         # Finalize
-        related = engine.finalize_research(question, full_answer, sources, tag)
+        related = engine.finalize_research(question, full_answer, final_sources, tag)
         yield f"data: {json.dumps({'done': True, 'related': related})}\n\n"
 
     return StreamingResponse(generator(), media_type="text/event-stream")

@@ -1,0 +1,16 @@
+
+__pycache__/
+*.pyc
+build/
+dist/
+*.egg-info/
+local_perplex/local_perplex_core.*.so
+local_perplex/local_perplex_core.*.pyd
+local_perplex/local_perplex_core.*.dll
+history/
+documents/*
+!documents/.gitkeep
+logs/
+server.log
+.vscode/
+.idea/
