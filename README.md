@@ -23,14 +23,20 @@ All features are included by default.
 
 ## ✨ Included Features
 
-### 👁️ Unlimited Visual Research
-Initiate research sessions using images with no limits. Upload diagrams, photos, or documents to provide instant visual context to your queries.
+### 👁️ Multimodal "Lens" (Vision & Translation)
+Initiate research sessions using images with no limits. It acts like **Google Lens**—analyzing visual objects, extracting and **translating foreign text** (polyglot support), and synthesizing a combined search objective from both the image and your text query.
+
+### 🔍 Iterative Deep Research
+Our agentic research mode (Pro) doesn't just perform one search; it **plans and executes multiple targeted queries** to gather exhaustive information, providing real-time progress steps ("Planning", "Searching", "Synthesizing") as it works.
 
 ### 🧠 AI-Driven Query Refinement
-Our engine doesn't just search; it thinks. It optimizes your natural language into professional search queries for superior site selection.
+Our engine doesn't just search; it thinks. It optimizes your natural language into professional, specific search queries for superior site selection.
 
 ### 🏢 Knowledge Vault
 Research across your private library. Full support for **PDF, Word, Excel, CSV, and Markdown**. Your local data is indexed and synthesized alongside web results.
+
+### 🔗 Interactive Citations
+Answers feature numerical citations (e.g., [1], [2]) that are **fully clickable**, navigating you directly to the relevant source card for instant verification.
 
 ### ⚡ C++ High-Performance Ranking
 Tokenization and relevance scoring for 20+ sources happen in milliseconds using our native C++ core.
