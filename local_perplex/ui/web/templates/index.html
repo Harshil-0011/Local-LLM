@@ -49,6 +49,10 @@
 
             <form action="/ask" method="post" enctype="multipart/form-data" id="search-form">
                 <div class="search-wrapper">
+                    <div id="image-preview-container" style="display: none; padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); position: relative;">
+                        <img id="image-preview" src="#" alt="Preview" style="max-height: 120px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <button type="button" onclick="removeImage()" style="position: absolute; top: 16px; left: 130px; background: #ff4132; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px;">&times;</button>
+                    </div>
                     <div class="search-input-row">
                         <textarea name="question" class="search-input" placeholder="Ask anything..." rows="1" required autofocus oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea>
                     </div>
@@ -127,10 +131,31 @@
 
         function handleFile(input) {
             const text = document.getElementById('file-btn-text');
-            if (input.files.length > 0) {
-                text.innerText = "1 File Attached";
-                text.style.color = "var(--nothing-red)";
+            const preview = document.getElementById('image-preview');
+            const previewContainer = document.getElementById('image-preview-container');
+
+            if (input.files && input.files[0]) {
+                text.innerText = "1 Image Attached";
+                text.style.color = "#ff4132";
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    previewContainer.style.display = 'block';
+                }
+                reader.readAsDataURL(input.files[0]);
             }
+        }
+
+        function removeImage() {
+            const input = document.querySelector('input[name="image"]');
+            const text = document.getElementById('file-btn-text');
+            const previewContainer = document.getElementById('image-preview-container');
+
+            input.value = "";
+            previewContainer.style.display = 'none';
+            text.innerText = "Attach";
+            text.style.color = "";
         }
 
         document.getElementById('search-form').onsubmit = function() {

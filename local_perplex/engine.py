@@ -62,12 +62,26 @@ class LocalPerplex:
         """Perform the non-LLM synthesis steps of research."""
         vision_context = ""
         if image_b64:
-            vision_prompt = [{"role": "user", "content": "Describe this image in detail.", "images": [image_b64]}]
-            vision_context = self.ollama.chat(self.model, vision_prompt)
-            question = f"[Image: {vision_context}] {question}"
+            # Enhanced "Lens" Prompt for Multimodal & Multilingual understanding
+            lens_prompt = [
+                {
+                    "role": "user",
+                    "content": f"Analyze this image in the context of: '{question}'. \n\n"
+                               "1. Describe visual objects and entities.\n"
+                               "2. Extract and TRANSLATE all visible text into English.\n"
+                               "3. Synthesize a combined research objective from both the image and the text query.\n"
+                               "Return a detailed research summary.",
+                    "images": [image_b64]
+                }
+            ]
+            vision_context = self.ollama.chat(self.model, lens_prompt)
+            question = f"[Image Lens: {vision_context}] {question}"
 
         try:
-            ref_prompt = [{"role": "system", "content": "You are an expert researcher. Convert the user question into an optimized search query. Return ONLY the string."}, {"role": "user", "content": question}]
+            ref_prompt = [
+                {"role": "system", "content": "You are an expert researcher. Convert the user's multimodal input into an optimized, specific search query for the web. Return ONLY the search query string."},
+                {"role": "user", "content": question}
+            ]
             refined_query = self.ollama.chat(self.model, ref_prompt).strip('"')
         except: refined_query = question
 
@@ -84,13 +98,15 @@ class LocalPerplex:
         return question, selected, context
 
     def ask_stream(self, question: str, context: str, history: list = None, mode: str = "industry_standard", sources: list = None):
-        system_prompt = "You are a premium AI researcher. Use the provided context to answer the user's question with absolute precision. "
+        system_prompt = "You are a premium AI researcher and polyglot translator. Use the provided context to answer the user's question with absolute precision. "
 
         if sources:
             source_map = "\n".join([f"[{i+1}] {s.url} - {s.title}" for i, s in enumerate(sources)])
             system_prompt += f"Cite sources using numerical markers like [1], [2], etc. corresponding to these sources:\n{source_map}\n"
         else:
             system_prompt += "Cite sources as [URL]."
+
+        system_prompt += " If the user query or image contains a foreign language, translate and explain it as part of your answer."
 
         if mode == "all_references" or mode == "pro":
             system_prompt += " Provide an exhaustive, detailed analysis with multiple sections."
