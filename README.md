@@ -1,69 +1,62 @@
-# 🏛️ Local Perplex — The Private AI Research Engine
+# Local Perplex The Private AI Research Engine
 
-[![Privacy First](https://img.shields.io/badge/Privacy-100%25%20Local-green?style=for-the-badge&logo=shield)](https://github.com/)
-[![High Performance](https://img.shields.io/badge/Engine-C%2B%2B%20Native-blue?style=for-the-badge&logo=c%2B%2B)](https://github.com/)
-[![Multimodal](https://img.shields.io/badge/Vision-Active-orange?style=for-the-badge&logo=openai)](https://github.com/)
+Local Perplex is a revolutionary step forward in the way we interact with information. It is a research engine built on a foundation of absolute privacy and exceptional performance. By combining a native C++ Core with the local intelligence of Ollama, we have created an experience that is as powerful as it is secure. This is not just a tool for finding answers. It is a tool for deeper understanding.
 
-**Local Perplex** is the privacy-focused alternative to Perplexity AI. It combines a high-speed **C++ Core** with **Ollama's** local intelligence to deliver a world-class research experience entirely on your hardware. No cloud, no tracking, no compromises.
+## The Power of Local Intelligence
 
-All features are included by default.
+At the heart of Local Perplex is a simple yet profound belief that your data belongs to you. In a world where cloud dependency has become the norm, we have chosen a different path. All processing, from language synthesis to image analysis, happens entirely on your local hardware. This means your questions, your documents, and your insights never leave your machine. It is a level of security that cloud alternatives simply cannot match.
 
----
+## Deep Research Reimagined
 
-## 🚀 Why Switch to Local Perplex?
+When you need more than just a quick fact, our Deep Research mode takes over. It does not simply perform a single search and hope for the best. Instead, it acts as a sophisticated digital agent. It analyzes your request, creates a multi step research plan, and executes targeted queries across the web. You can watch as it moves through each phase of the process, from planning and searching to final synthesis. The result is a comprehensive and structured report that gives you the full picture, every time.
 
-| Feature | Local Perplex | Cloud Alternatives |
-| :--- | :--- | :--- |
-| **Data Privacy** | 🔐 100% Local (Air-gapped compatible) | ☁️ Sent to external servers |
-| **Speed** | ⚡ C++ Native Ranking | 🐌 Network Latency dependent |
-| **Customization** | 🛠️ Any Ollama Model | 🚫 Restricted Model selection |
-| **Cost** | 💎 Permanent Free (Self-hosted) | 💳 Monthly Subscription |
+## A Lens Into Your World
 
----
+Our multimodal Lens feature transforms the way you see and understand the world around you. You can attach an image to any query and our vision system will analyze it with remarkable precision. Whether you are identifying complex objects or extracting text from a foreign language, Lens handles it with ease. It can take a photo of a document in Spanish, translate the text into English, and then use that context to perform a deeper search. It is a seamless fusion of visual and textual understanding that feels like magic.
 
-## ✨ Included Features
+## The Knowledge Vault
 
-### 👁️ Multimodal "Lens" (Vision & Translation)
-Initiate research sessions using images with no limits. It acts like **Google Lens**—analyzing visual objects, extracting and **translating foreign text** (polyglot support), and synthesizing a combined search objective from both the image and your text query.
+Your own private library is a goldmine of information. The Knowledge Vault allows you to bring that information into your research workflow. It supports a wide range of formats including PDF, Word, Excel, CSV, and Markdown. Simply drop your files into the vault and our engine will index and search them alongside web results. This creates a unified research experience where your private data and the collective knowledge of the web work together to provide the ultimate answer.
 
-### 🔍 Iterative Deep Research
-Our agentic research mode (Pro) doesn't just perform one search; it **plans and executes multiple targeted queries** to gather exhaustive information, providing real-time progress steps ("Planning", "Searching", "Synthesizing") as it works.
+## Performance by Design
 
-### 🧠 AI-Driven Query Refinement
-Our engine doesn't just search; it thinks. It optimizes your natural language into professional, specific search queries for superior site selection.
+To ensure a fluid and responsive experience, we built the ranking engine in native C++. While other systems struggle with the latency of interpreted code, our core performs tokenization and relevance scoring in milliseconds. This native performance allows us to analyze dozens of sources simultaneously without a hint of slowdown. It is the kind of speed that keeps you in your flow, allowing you to move from curiosity to insight faster than ever before.
 
-### 🏢 Knowledge Vault
-Research across your private library. Full support for **PDF, Word, Excel, CSV, and Markdown**. Your local data is indexed and synthesized alongside web results.
+## Interactive Citations
 
-### 🔗 Interactive Citations
-Answers feature numerical citations (e.g., [1], [2]) that are **fully clickable**, navigating you directly to the relevant source card for instant verification.
+We believe that every answer should be verifiable. That is why every report generated by Local Perplex features numerical citations. These are not static numbers. They are interactive links that take you directly to the source material. With a single click, you can view the original card and verify the information for yourself. It is a level of transparency that builds trust and ensures your research is built on a solid foundation.
 
-### ⚡ C++ High-Performance Ranking
-Tokenization and relevance scoring for 20+ sources happen in milliseconds using our native C++ core.
+## Absolute Privacy by Default
 
-### 🛡️ Incognito Research
-Research sensitive topics without a trace. Bypasses history, logging, and disk persistence with a single click.
+Privacy is not a feature we added later. It is the core of everything we build. For those times when you need total anonymity, our Incognito mode ensures that no traces are left behind. It bypasses history logging and disk persistence entirely. It is the ultimate expression of our commitment to your digital freedom.
 
----
+## Installation and Setup
 
-## 🛠️ Installation (Windows)
+Getting started with Local Perplex is straightforward. It is designed to run on Windows and requires a few basic components to deliver its full potential.
 
-1. **Prerequisites**: Install [Python 3.10+](https://python.org) and [Ollama](https://ollama.com).
-2. **Build Engine**:
-   ```bash
-   mkdir build && cd build
-   cmake .. && cmake --build . --config Release
-   ```
-3. **Install & Run**:
-   ```bash
-   pip install -e .
-   perplex-gui
-   ```
+1. Prerequisites
+Ensure you have Python 3.10 or newer installed on your system. You will also need to download and install Ollama from its official website.
 
----
+2. Building the Engine
+Open your terminal and execute the following commands to build the native C++ core.
+mkdir build
+cd build
+cmake ..
+cmake --build . --config Release
+cd ..
 
-## 🎨 Premium UI Experience
-Designed with a minimalist aesthetic inspired by **Apple, Nothing, and Google**. Features shimmering animations, glassmorphism, and a seamless Dark/Light mode experience.
+3. Installing the Package
+Once the engine is built, install the Python package in editable mode to ensure all entry points are correctly configured.
+pip install -e .
 
----
-*Built for the privacy-conscious elite. Better than Perplexity, in every way.*
+4. Running the Application
+You can launch the web interface by running the following command.
+perplex-gui
+
+The application will be available in your browser at the local address provided in the terminal output.
+
+## The Minimalist Experience
+
+The user interface of Local Perplex is a study in restraint and elegance. Inspired by the best of modern design, it features a clean dark mode with subtle glassmorphism effects. Every animation and transition is designed to be smooth and non intrusive. It is an environment that respects your attention and allows you to focus on what matters most which is your research.
+
+Local Perplex is more than the sum of its parts. It is a commitment to a future where intelligence is personal, private, and exceptionally fast. It is research, redefined.
