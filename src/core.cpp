@@ -105,6 +105,6 @@ PYBIND11_MODULE(local_perplex_core, m) {
         .def(py::init<>())
         .def("rank_sources", &ResearchEngine::rank_sources);
 
-    m.def("calculate_score", &TextProcessor::calculate_relevance);
-    m.def("tokenize", &TextProcessor::tokenize);
+    m.def("calculate_score", &TextProcessor::calculate_relevance, py::call_guard<py::gil_scoped_release>());
+    m.def("tokenize", &TextProcessor::tokenize, py::call_guard<py::gil_scoped_release>());
 }
