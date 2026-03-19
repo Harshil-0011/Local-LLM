@@ -1,0 +1,13 @@
+requests
+pyyaml
+click
+fastapi
+uvicorn
+jinja2
+pydantic
+pydantic-settings
+python-multipart
+duckduckgo_search
+beautifulsoup4
+pybind11
+pypdf

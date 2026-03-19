@@ -20,15 +20,17 @@ async def index(request: Request):
 @app.post("/upload-docs")
 async def upload_docs(files: list[UploadFile] = File(...)):
     for file in files:
+        # Sanitize filename against path traversal
+        filename = os.path.basename(file.filename)
         content = await file.read()
-        if file.filename.lower().endswith('.pdf'):
+        if filename.lower().endswith('.pdf'):
             # Save binary PDF
-            with open(engine.docs.doc_dir / file.filename, "wb") as f:
+            with open(engine.docs.doc_dir / filename, "wb") as f:
                 f.write(content)
         else:
             try:
                 text = content.decode('utf-8')
-                engine.docs.add_document(file.filename, text)
+                engine.docs.add_document(filename, text)
             except: continue
     return RedirectResponse(url="/", status_code=303)
 
