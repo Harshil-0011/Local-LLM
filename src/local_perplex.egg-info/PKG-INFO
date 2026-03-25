@@ -26,60 +26,111 @@ Requires-Dist: openpyxl
 [![High Performance](https://img.shields.io/badge/Engine-C%2B%2B%20Native-blue?style=for-the-badge&logo=c%2B%2B)](https://github.com/)
 [![Multimodal](https://img.shields.io/badge/Vision-Active-orange?style=for-the-badge&logo=openai)](https://github.com/)
 
-**Local Perplex** is the privacy-focused alternative to Perplexity AI. It combines a high-speed **C++ Core** with **Ollama's** local intelligence to deliver a world-class research experience entirely on your hardware. No cloud, no tracking, no compromises.
+> "Local Perplex is more than a research engine. It is a commitment to a future where intelligence is personal, private, and exceptionally fast."
 
-All features are included by default.
-
----
-
-## 🚀 Why Switch to Local Perplex?
-
-| Feature | Local Perplex | Cloud Alternatives |
-| :--- | :--- | :--- |
-| **Data Privacy** | 🔐 100% Local (Air-gapped compatible) | ☁️ Sent to external servers |
-| **Speed** | ⚡ C++ Native Ranking | 🐌 Network Latency dependent |
-| **Customization** | 🛠️ Any Ollama Model | 🚫 Restricted Model selection |
-| **Cost** | 💎 Permanent Free (Self-hosted) | 💳 Monthly Subscription |
+Local Perplex is a revolutionary step forward in the way we interact with information. It is a research engine built on a foundation of absolute privacy and exceptional performance. By combining a native **C++ Core** with the local intelligence of **Ollama**, we have created an experience that is as powerful as it is secure. This is not just a tool for finding answers; it is a tool for deeper understanding.
 
 ---
 
-## ✨ Included Features
+## 🔐 The Power of Local Intelligence
 
-### 👁️ Unlimited Visual Research
-Initiate research sessions using images with no limits. Upload diagrams, photos, or documents to provide instant visual context to your queries.
+At the heart of Local Perplex is a simple yet profound belief: **your data belongs to you**. In a world where cloud dependency has become the norm, we have chosen a different path.
 
-### 🧠 AI-Driven Query Refinement
-Our engine doesn't just search; it thinks. It optimizes your natural language into professional search queries for superior site selection.
-
-### 🏢 Knowledge Vault
-Research across your private library. Full support for **PDF, Word, Excel, CSV, and Markdown**. Your local data is indexed and synthesized alongside web results.
-
-### ⚡ C++ High-Performance Ranking
-Tokenization and relevance scoring for 20+ sources happen in milliseconds using our native C++ core.
-
-### 🛡️ Incognito Research
-Research sensitive topics without a trace. Bypasses history, logging, and disk persistence with a single click.
+*   **100% Local Processing**: All synthesis, from language to images, happens on your hardware.
+*   **Zero Data Leakage**: Your questions and insights never leave your machine.
+*   **Total Sovereignty**: A level of security that cloud alternatives simply cannot match.
 
 ---
 
-## 🛠️ Installation (Windows)
+## 🔍 Deep Research Reimagined
 
-1. **Prerequisites**: Install [Python 3.10+](https://python.org) and [Ollama](https://ollama.com).
-2. **Build Engine**:
-   ```bash
-   mkdir build && cd build
-   cmake .. && cmake --build . --config Release
-   ```
-3. **Install & Run**:
-   ```bash
-   pip install -e .
-   perplex-gui
-   ```
+When you need more than just a quick fact, our **Deep Research** mode takes over. It does not simply perform a single search; it acts as a sophisticated digital agent.
+
+*   **Agentic Planning**: Analyzes your request and creates a multi-step research plan.
+*   **Targeted Execution**: Performs multiple searches across the web to gather exhaustive data.
+*   **Watch the Process**: Follow along as it moves through planning, searching, and final synthesis.
+*   **Comprehensive Reports**: Structured results that give you the full picture, every time.
 
 ---
 
-## 🎨 Premium UI Experience
-Designed with a minimalist aesthetic inspired by **Apple, Nothing, and Google**. Features shimmering animations, glassmorphism, and a seamless Dark/Light mode experience.
+## 👁️ A Lens Into Your World
+
+Our multimodal **Lens** feature transforms the way you see and understand the world around you.
+
+*   **Visual Precision**: Attach an image and our vision system will analyze objects and entities with remarkable accuracy.
+*   **Polyglot OCR**: Extract and **translate foreign text** in real-time. A photo of a Spanish document can be translated and used as context for a deeper search.
+*   **Seamless Fusion**: Visual and textual understanding working together like magic.
 
 ---
-*Built for the privacy-conscious elite. Better than Perplexity, in every way.*
+
+## 🏢 The Knowledge Vault
+
+Your own private library is a goldmine of information. The **Knowledge Vault** allows you to bring that information into your research workflow.
+
+*   **Universal Format Support**: Full support for PDF, Word, Excel, CSV, and Markdown.
+*   **Unified Search**: Index and search your private files alongside live web results.
+*   **Local RAG**: A seamless experience where your data and the world's knowledge work in unison.
+
+---
+
+## ⚡ Performance by Design
+
+To ensure a fluid and responsive experience, we built the ranking engine in **Native C++**.
+
+*   **Native Speed**: Tokenization and relevance scoring happen in milliseconds.
+*   **Beyond Interpretation**: Skip the latency of interpreted code for near-instant results.
+*   **Massive Parallelism**: Analyze dozens of sources simultaneously without a hint of slowdown.
+
+---
+
+## 🔗 Interactive Citations
+
+We believe that every answer should be verifiable. Every report features **Numerical Citations** that aren't just numbers—they are **Interactive Links**.
+
+*   **Instant Verification**: A single click takes you directly to the source material.
+*   **Build Trust**: View the original data card to verify information for yourself.
+*   **Transparent Research**: Built on a foundation of clarity and accountability.
+
+---
+
+## 🛡️ Absolute Privacy by Default
+
+Privacy is not a feature we added later; it is the core of everything we build.
+
+*   **Incognito Mode**: Research sensitive topics with total anonymity.
+*   **No Trace Left Behind**: Bypasses history logging and disk persistence entirely.
+*   **Digital Freedom**: The ultimate expression of our commitment to your privacy.
+
+---
+
+## 🛠️ Installation and Setup
+
+Getting started with Local Perplex is straightforward. Designed to run on **Windows**, it requires a few basic components to deliver its full potential.
+
+1.  **Prerequisites**: Install **Python 3.10+** and **Ollama**.
+2.  **Building the Engine**:
+    ```bash
+    mkdir build && cd build
+    cmake .. && cmake --build . --config Release
+    ```
+3.  **Installing the Package**:
+    ```bash
+    pip install -e .
+    ```
+4.  **Running the Application**:
+    ```bash
+    perplex-gui
+    ```
+
+---
+
+## 🎨 The Minimalist Experience
+
+The user interface of Local Perplex is a study in restraint and elegance.
+
+*   **Glassmorphism**: A clean dark mode with subtle, modern visual effects.
+*   **Smooth Animations**: Transitions designed to be fluid and non-intrusive.
+*   **Premium Aesthetic**: An environment that respects your attention and focus.
+
+---
+*Built for the privacy-conscious elite. Research, redefined.*
