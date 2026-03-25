@@ -3,6 +3,14 @@ project(local_perplex_core)
 
 set(CMAKE_CXX_STANDARD 17)
 
+if(MSVC)
+    add_compile_options(/O2 /Oi /Ot /GL)
+    add_link_options(/LTCG)
+else()
+    add_compile_options(-O3 -march=native -flto)
+    add_link_options(-flto)
+endif()
+
 # Attempt to find pybind11 automatically. On Windows/Linux, ensure pybind11 is installed via pip.
 execute_process(
     COMMAND python -m pybind11 --cmakedir

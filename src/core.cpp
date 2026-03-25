@@ -16,7 +16,6 @@ public:
     static std::vector<std::string> tokenize(const std::string& text) {
         std::vector<std::string> tokens;
         if (text.empty()) return tokens;
-        tokens.reserve(text.length() / 6);
         const char* start = text.c_str();
         const char* end = start + text.length();
         const char* p = start;
@@ -30,11 +29,10 @@ public:
             while (p < end && std::isalnum(static_cast<unsigned char>(*p))) p++;
 
             if (p - word_start > 2) {
-                std::string word(word_start, p - word_start);
-                for (char &c : word) {
+                tokens.emplace_back(word_start, p - word_start);
+                for (char &c : tokens.back()) {
                     c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
                 }
-                tokens.push_back(std::move(word));
             }
         }
         return tokens;
@@ -118,8 +116,8 @@ PYBIND11_MODULE(local_perplex_core, m) {
 
     py::class_<ResearchEngine>(m, "ResearchEngine")
         .def(py::init<>())
-        .def("rank_sources", &ResearchEngine::rank_sources);
+        .def("rank_sources", &ResearchEngine::rank_sources, py::call_guard<py::gil_scoped_release>());
 
-    m.def("calculate_score", &TextProcessor::calculate_relevance);
-    m.def("tokenize", &TextProcessor::tokenize);
+    m.def("calculate_score", &TextProcessor::calculate_relevance, py::call_guard<py::gil_scoped_release>());
+    m.def("tokenize", &TextProcessor::tokenize, py::call_guard<py::gil_scoped_release>());
 }
