@@ -24,7 +24,7 @@ class LocalPerplex:
         try:
             plan_raw = self.ollama.chat(self.model, plan_prompt)
             queries = [q.strip("- ").strip() for q in plan_raw.split("\n") if q.strip()][:3]
-        except:
+        except Exception:
             queries = [question]
 
         all_selected = []
@@ -83,7 +83,8 @@ class LocalPerplex:
                 {"role": "user", "content": question}
             ]
             refined_query = self.ollama.chat(self.model, ref_prompt).strip('"')
-        except: refined_query = question
+        except Exception:
+            refined_query = question
 
         raw_web_sources = self.search_engine.search(refined_query, focus_mode=focus_mode)
         ranked = self.cpp_engine.rank_sources(refined_query, [{"title": s["title"], "url": s["url"], "content": s["content"]} for s in raw_web_sources])

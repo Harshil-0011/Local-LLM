@@ -27,7 +27,7 @@ def python_calculate_relevance(query, content):
     return score / math.log(1.0 + len(c_tokens))
 
 def run_benchmark():
-    # Generate 1000 dummy documents
+    # Generate 10,000 dummy documents
     query = "performance of native c++ versus interpreted python code"
     docs = []
     for i in range(10000):

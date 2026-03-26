@@ -46,8 +46,8 @@ Our multimodal **Lens** feature transforms the way you see and understand the wo
 Your own private library is a goldmine of information. The **Knowledge Vault** allows you to bring that information into your research workflow.
 
 *   **Universal Format Support**: Full support for PDF, Word, Excel, CSV, and Markdown.
-*   **Unified Search**: Index and search your private files alongside live web results.
-*   **Local RAG**: A seamless experience where your data and the world's knowledge work in unison.
+*   **Vault Management**: A dedicated interface to upload, index, and purge documents from your local search context.
+*   **Local RAG**: A seamless experience where your private data and the world's knowledge work in perfect unison.
 
 ---
 
@@ -56,7 +56,7 @@ Your own private library is a goldmine of information. The **Knowledge Vault** a
 To ensure a fluid and responsive experience, we built the ranking engine in **Native C++**.
 
 *   **Native Speed**: Tokenization and relevance scoring happen in milliseconds.
-*   **Beyond Interpretation**: Skip the latency of interpreted code for near-instant results.
+*   **Multi-Threaded Ranking**: Parallel analysis of web sources with manual GIL management for maximum throughput.
 *   **Massive Parallelism**: Analyze dozens of sources simultaneously without a hint of slowdown.
 
 ---

@@ -81,26 +81,38 @@ public:
     }
 
     std::vector<SourceItem> rank_sources(const std::string& query, py::list raw_sources) {
-        std::vector<SourceItem> ranked;
+        struct RawItem { std::string title, url, content; };
+        std::vector<RawItem> extracted;
+        extracted.reserve(py::len(raw_sources));
+
         for (auto item : raw_sources) {
+            if (!py::isinstance<py::dict>(item)) continue;
             py::dict d = item.cast<py::dict>();
-            std::string title = d.contains("title") ? d["title"].cast<std::string>() : "";
-            std::string url = d.contains("url") ? d["url"].cast<std::string>() : "";
-            std::string content = d.contains("content") ? d["content"].cast<std::string>() : "";
-
-            double score = TextProcessor::calculate_relevance(query, content);
-            std::string category = classify_source(url);
-
-            // Credibility boost
-            if (category == "Academic") score *= 1.25;
-            if (category == "Government") score *= 1.15;
-
-            ranked.push_back({title, url, content, score, category});
+            extracted.push_back({
+                d.contains("title") ? d["title"].cast<std::string>() : "",
+                d.contains("url") ? d["url"].cast<std::string>() : "",
+                d.contains("content") ? d["content"].cast<std::string>() : ""
+            });
         }
 
-        std::sort(ranked.begin(), ranked.end(), [](const SourceItem& a, const SourceItem& b) {
-            return a.relevance > b.relevance;
-        });
+        std::vector<SourceItem> ranked;
+        {
+            py::gil_scoped_release release;
+            for (const auto& item : extracted) {
+                double score = TextProcessor::calculate_relevance(query, item.content);
+                std::string category = classify_source(item.url);
+
+                // Credibility boost
+                if (category == "Academic") score *= 1.25;
+                if (category == "Government") score *= 1.15;
+
+                ranked.push_back({item.title, item.url, item.content, score, category});
+            }
+
+            std::sort(ranked.begin(), ranked.end(), [](const SourceItem& a, const SourceItem& b) {
+                return a.relevance > b.relevance;
+            });
+        }
 
         return ranked;
     }
@@ -116,7 +128,7 @@ PYBIND11_MODULE(local_perplex_core, m) {
 
     py::class_<ResearchEngine>(m, "ResearchEngine")
         .def(py::init<>())
-        .def("rank_sources", &ResearchEngine::rank_sources, py::call_guard<py::gil_scoped_release>());
+        .def("rank_sources", &ResearchEngine::rank_sources);
 
     m.def("calculate_score", &TextProcessor::calculate_relevance, py::call_guard<py::gil_scoped_release>());
     m.def("tokenize", &TextProcessor::tokenize, py::call_guard<py::gil_scoped_release>());

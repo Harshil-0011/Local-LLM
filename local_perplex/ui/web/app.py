@@ -2,6 +2,8 @@ from fastapi import FastAPI, Request, Form, File, UploadFile, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse, PlainTextResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
 import html
+import json
+import base64
 from fastapi.staticfiles import StaticFiles
 from local_perplex.engine import LocalPerplex
 import uvicorn
@@ -26,8 +28,7 @@ context_cache = {}
 async def index(request: Request):
     history = engine.history.get_all_sessions()
     docs = [f.name for f in engine.docs.doc_dir.glob("*") if f.is_file()]
-    return templates.TemplateResponse("index.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "index.html", {
         "history": history,
         "docs": docs,
         "current_model": engine.model
@@ -35,11 +36,31 @@ async def index(request: Request):
 
 @app.get("/settings", response_class=HTMLResponse)
 async def settings_get(request: Request):
-    return templates.TemplateResponse("settings.html", {"request": request, "model": engine.model})
+    return templates.TemplateResponse(request, "settings.html", {"model": engine.model})
+
+@app.get("/vault", response_class=HTMLResponse)
+async def vault_get(request: Request):
+    docs = []
+    for f in engine.docs.doc_dir.glob("*"):
+        if f.is_file():
+            docs.append({
+                "name": f.name,
+                "size": f.stat().st_size,
+                "modified": f.stat().st_mtime
+            })
+    return templates.TemplateResponse(request, "vault.html", {"docs": docs})
+
+@app.post("/vault/delete")
+async def vault_delete(filename: str = Form(...)):
+    safe_filename = os.path.basename(filename)
+    filepath = engine.docs.doc_dir / safe_filename
+    if filepath.exists() and filepath.is_file():
+        filepath.unlink()
+    return RedirectResponse(url="/vault", status_code=303)
 
 @app.get("/privacy", response_class=HTMLResponse)
 async def privacy_get(request: Request):
-    return templates.TemplateResponse("privacy.html", {"request": request})
+    return templates.TemplateResponse(request, "privacy.html")
 
 @app.post("/settings")
 async def settings_post(model: str = Form(...)):
@@ -60,8 +81,9 @@ async def upload_docs(files: list[UploadFile] = File(...)):
             try:
                 text = content.decode('utf-8')
                 engine.docs.add_document(safe_filename, text)
-            except: continue
-    return RedirectResponse(url="/", status_code=303)
+            except Exception:
+                continue
+    return RedirectResponse(url="/vault", status_code=303)
 
 @app.post("/ask", response_class=HTMLResponse)
 async def ask(
@@ -79,12 +101,10 @@ async def ask(
     tag = html.escape(tag)
     history = []
     if conversation_history:
-        import json
         history = json.loads(conversation_history)
 
     image_b64 = None
     if image and image.filename:
-        import base64
         content = await image.read()
         image_b64 = base64.b64encode(content).decode('utf-8')
 
@@ -104,7 +124,6 @@ async def ask(
     if privacy_mode:
         tag = "[INCOGNITO]"
 
-    import json
     sources_json = json.dumps([{"title": s.title, "url": s.url, "relevance": s.relevance, "category": s.category, "content": s.content} for s in sources])
 
     # Generate a session ID to store the large context on the server
@@ -116,8 +135,7 @@ async def ask(
         "focus_mode": focus_mode
     }
 
-    return templates.TemplateResponse("result.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "result.html", {
         "question": question,
         "sources": sources,
         "sources_json": sources_json,
@@ -133,7 +151,6 @@ async def ask(
 
 @app.get("/stream-answer")
 async def stream_answer(question: str, session_id: str, mode: str, tag: str = "General"):
-    import json
     cached = context_cache.get(session_id)
     if not cached:
         raise HTTPException(status_code=404, detail="Research session expired")
@@ -196,8 +213,7 @@ async def view_history(request: Request, index: int):
     history = engine.history.get_all_sessions()
     if 0 <= index < len(history):
         session = history[index]
-        return templates.TemplateResponse("result.html", {
-            "request": request,
+        return templates.TemplateResponse(request, "result.html", {
             "question": session["question"],
             "answer": session["answer"],
             "sources": session["sources"],

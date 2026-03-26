@@ -18,13 +18,15 @@ class SearchEngine:
         if not url: return None
         try:
             # ⚡ Bolt: Use the shared session to benefit from HTTP Keep-Alive and connection reuse
-            resp = self.session.get(url, timeout=5)
+            resp = self.session.get(url, timeout=5, verify=True)
             if resp.status_code == 200:
                 soup = BeautifulSoup(resp.text, 'html.parser')
                 # Remove script and style elements
                 for script in soup(["script", "style"]):
                     script.decompose()
                 text = soup.get_text(separator=' ', strip=True)
+                if len(text) < 100: # Skip very thin pages
+                    return None
                 score = core.calculate_score(query, text)
                 return {
                     "title": r.get('title', 'No Title'),
@@ -33,6 +35,7 @@ class SearchEngine:
                     "relevance": score
                 }
         except Exception:
+            # Silent fail for individual URLs is expected in parallel scraping
             pass
         return None
 
