@@ -3,6 +3,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse, PlainTextResponse,
 from fastapi.templating import Jinja2Templates
 import html
 import json
+import base64
 from fastapi.staticfiles import StaticFiles
 from local_perplex.engine import LocalPerplex
 import uvicorn
@@ -103,7 +104,6 @@ async def ask(
 
     image_b64 = None
     if image and image.filename:
-        import base64
         content = await image.read()
         image_b64 = base64.b64encode(content).decode('utf-8')
 
