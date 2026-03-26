@@ -26,8 +26,7 @@ context_cache = {}
 async def index(request: Request):
     history = engine.history.get_all_sessions()
     docs = [f.name for f in engine.docs.doc_dir.glob("*") if f.is_file()]
-    return templates.TemplateResponse("index.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "index.html", {
         "history": history,
         "docs": docs,
         "current_model": engine.model
@@ -35,11 +34,31 @@ async def index(request: Request):
 
 @app.get("/settings", response_class=HTMLResponse)
 async def settings_get(request: Request):
-    return templates.TemplateResponse("settings.html", {"request": request, "model": engine.model})
+    return templates.TemplateResponse(request, "settings.html", {"model": engine.model})
+
+@app.get("/vault", response_class=HTMLResponse)
+async def vault_get(request: Request):
+    docs = []
+    for f in engine.docs.doc_dir.glob("*"):
+        if f.is_file():
+            docs.append({
+                "name": f.name,
+                "size": f.stat().st_size,
+                "modified": f.stat().st_mtime
+            })
+    return templates.TemplateResponse(request, "vault.html", {"docs": docs})
+
+@app.post("/vault/delete")
+async def vault_delete(filename: str = Form(...)):
+    safe_filename = os.path.basename(filename)
+    filepath = engine.docs.doc_dir / safe_filename
+    if filepath.exists() and filepath.is_file():
+        filepath.unlink()
+    return RedirectResponse(url="/vault", status_code=303)
 
 @app.get("/privacy", response_class=HTMLResponse)
 async def privacy_get(request: Request):
-    return templates.TemplateResponse("privacy.html", {"request": request})
+    return templates.TemplateResponse(request, "privacy.html")
 
 @app.post("/settings")
 async def settings_post(model: str = Form(...)):
@@ -116,8 +135,7 @@ async def ask(
         "focus_mode": focus_mode
     }
 
-    return templates.TemplateResponse("result.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "result.html", {
         "question": question,
         "sources": sources,
         "sources_json": sources_json,
@@ -196,8 +214,7 @@ async def view_history(request: Request, index: int):
     history = engine.history.get_all_sessions()
     if 0 <= index < len(history):
         session = history[index]
-        return templates.TemplateResponse("result.html", {
-            "request": request,
+        return templates.TemplateResponse(request, "result.html", {
             "question": session["question"],
             "answer": session["answer"],
             "sources": session["sources"],
