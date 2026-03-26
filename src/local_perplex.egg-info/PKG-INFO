@@ -1,3 +1,25 @@
+Metadata-Version: 2.4
+Name: local-perplex
+Version: 1.0.0
+Summary: A premium local alternative to Perplexity AI
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: requests
+Requires-Dist: pyyaml
+Requires-Dist: click
+Requires-Dist: fastapi
+Requires-Dist: uvicorn
+Requires-Dist: jinja2
+Requires-Dist: pydantic
+Requires-Dist: pydantic-settings
+Requires-Dist: python-multipart
+Requires-Dist: duckduckgo_search
+Requires-Dist: beautifulsoup4
+Requires-Dist: pybind11
+Requires-Dist: pypdf
+Requires-Dist: python-docx
+Requires-Dist: openpyxl
+
 # 🏛️ Local Perplex — The Private AI Research Engine
 
 [![Privacy First](https://img.shields.io/badge/Privacy-100%25%20Local-green?style=for-the-badge&logo=shield)](https://github.com/)

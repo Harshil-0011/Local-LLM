@@ -50,6 +50,3 @@ class OllamaClient:
         except Exception as e:
             logger.error(f"Stream error: {e}")
             yield f"\n[Error: {e}]"
-        except Exception as e:
-            logger.error(f"Error communicating with Ollama: {e}")
-            raise RuntimeError(f"Ollama connection error: {e}. Is Ollama running?")

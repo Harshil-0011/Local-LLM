@@ -1,4 +1,4 @@
-from ddgs import DDGS
+from duckduckgo_search import DDGS
 import requests
 from bs4 import BeautifulSoup
 import local_perplex.local_perplex_core as core
@@ -6,13 +6,19 @@ from concurrent.futures import ThreadPoolExecutor
 import time
 
 class SearchEngine:
+    def __init__(self):
+        # ⚡ Bolt: Use a session for connection pooling to speed up multiple requests
+        self.session = requests.Session()
+        self.session.headers.update({
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        })
+
     def _scrape_url(self, r, query):
         url = r.get('href')
         if not url: return None
         try:
-            resp = requests.get(url, timeout=5, headers={
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-            })
+            # ⚡ Bolt: Use the shared session to benefit from HTTP Keep-Alive and connection reuse
+            resp = self.session.get(url, timeout=5)
             if resp.status_code == 200:
                 soup = BeautifulSoup(resp.text, 'html.parser')
                 # Remove script and style elements
@@ -30,9 +36,23 @@ class SearchEngine:
             pass
         return None
 
-    def search(self, query: str, num_results: int = 20):
+    def search(self, query: str, num_results: int = 20, focus_mode: str = "All"):
         sources = []
         results = []
+
+        # Decorate query based on focus mode
+        if focus_mode == "Academic":
+            query = f"{query} site:arxiv.org OR site:scholar.google.com OR site:researchgate.net"
+        elif focus_mode == "Reddit":
+            query = f"{query} site:reddit.com"
+        elif focus_mode == "YouTube":
+            query = f"{query} site:youtube.com"
+        elif focus_mode == "Technical":
+            query = f"{query} site:github.com OR site:stackoverflow.com OR site:docs.microsoft.com"
+        elif focus_mode == "Writing":
+            num_results = 0 # No search needed for pure writing mode
+        elif focus_mode == "Computational":
+            query = f"{query} site:wolframalpha.com OR site:wikipedia.org"
 
         # Try multiple times or fallback
         for attempt in range(3):
