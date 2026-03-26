@@ -1,6 +1,7 @@
 import requests
 import json
 import logging
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -8,6 +9,8 @@ class OllamaClient:
     def __init__(self, base_url: str):
         self.base_url = base_url.rstrip("/")
         self.chat_url = f"{self.base_url}/api/chat"
+        self.last_latency = 0.0
+        self.last_tps = 0.0
 
     def chat(self, model: str, messages: list[dict], stream: bool = False, **params):
         payload = {
@@ -18,7 +21,6 @@ class OllamaClient:
         }
 
         if not stream:
-            import time
             start_time = time.time()
             try:
                 response = requests.post(self.chat_url, json=payload, timeout=120)

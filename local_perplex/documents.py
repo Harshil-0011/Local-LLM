@@ -43,11 +43,11 @@ class DocumentManager:
                     context.append(f"Local Excel (Data): {file.name}\nContent: {content[:4000]}")
                 except Exception: continue
             elif ext == ".csv":
-                 try:
+                try:
                     with open(file, "r", encoding="utf-8") as f:
                         content = f.read()
                         context.append(f"Local CSV (Data): {file.name}\nContent: {content[:4000]}")
-                 except Exception: continue
+                except Exception: continue
         return "\n\n".join(context)
 
     def add_document(self, filename: str, content: str):

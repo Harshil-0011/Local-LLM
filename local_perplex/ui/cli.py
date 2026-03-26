@@ -7,13 +7,14 @@ from local_perplex.engine import LocalPerplex
 def main(question, mode):
     lp = LocalPerplex()
     click.echo(f"Searching and analyzing...")
-    answer, sources, related = lp.ask(question, mode=mode)
+    question, sources, context = lp.research_step(question, mode=mode)
+    answer = lp.ask(question, context, mode=mode)
 
     click.echo("\n--- Answer ---")
     click.echo(answer)
     click.echo("\n--- Sources ---")
     for s in sources:
-        click.echo(f"- {s['title']} ({s['url']}) [Relevance: {s['relevance']:.4f}]")
+        click.echo(f"- {s.title} ({s.url}) [Relevance: {s.relevance:.4f}]")
 
 if __name__ == "__main__":
     main()

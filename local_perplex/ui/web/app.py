@@ -2,6 +2,7 @@ from fastapi import FastAPI, Request, Form, File, UploadFile, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse, PlainTextResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
 import html
+import json
 from fastapi.staticfiles import StaticFiles
 from local_perplex.engine import LocalPerplex
 import uvicorn
@@ -80,7 +81,7 @@ async def upload_docs(files: list[UploadFile] = File(...)):
                 text = content.decode('utf-8')
                 engine.docs.add_document(safe_filename, text)
             except: continue
-    return RedirectResponse(url="/", status_code=303)
+    return RedirectResponse(url="/vault", status_code=303)
 
 @app.post("/ask", response_class=HTMLResponse)
 async def ask(
@@ -98,7 +99,6 @@ async def ask(
     tag = html.escape(tag)
     history = []
     if conversation_history:
-        import json
         history = json.loads(conversation_history)
 
     image_b64 = None
@@ -123,7 +123,6 @@ async def ask(
     if privacy_mode:
         tag = "[INCOGNITO]"
 
-    import json
     sources_json = json.dumps([{"title": s.title, "url": s.url, "relevance": s.relevance, "category": s.category, "content": s.content} for s in sources])
 
     # Generate a session ID to store the large context on the server
@@ -151,7 +150,6 @@ async def ask(
 
 @app.get("/stream-answer")
 async def stream_answer(question: str, session_id: str, mode: str, tag: str = "General"):
-    import json
     cached = context_cache.get(session_id)
     if not cached:
         raise HTTPException(status_code=404, detail="Research session expired")

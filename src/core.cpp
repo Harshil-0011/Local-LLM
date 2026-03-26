@@ -86,6 +86,7 @@ public:
         extracted.reserve(py::len(raw_sources));
 
         for (auto item : raw_sources) {
+            if (!py::isinstance<py::dict>(item)) continue;
             py::dict d = item.cast<py::dict>();
             extracted.push_back({
                 d.contains("title") ? d["title"].cast<std::string>() : "",

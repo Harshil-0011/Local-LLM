@@ -13,7 +13,7 @@ class HistoryManager:
         filename = f"{timestamp}_{safe_q}.json"
 
         data = {
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": timestamp,
             "question": question,
             "answer": answer,
             "sources": sources,
