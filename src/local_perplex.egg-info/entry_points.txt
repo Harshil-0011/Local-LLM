@@ -1,3 +1,0 @@
-[console_scripts]
-perplex = local_perplex.ui.cli:main
-perplex-gui = local_perplex.ui.web.app:main

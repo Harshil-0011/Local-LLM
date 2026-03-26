@@ -1,9 +1,0 @@
-README.md
-pyproject.toml
-src/local_perplex.egg-info/PKG-INFO
-src/local_perplex.egg-info/SOURCES.txt
-src/local_perplex.egg-info/dependency_links.txt
-src/local_perplex.egg-info/entry_points.txt
-src/local_perplex.egg-info/requires.txt
-src/local_perplex.egg-info/top_level.txt
-tests/test_lp_core.py

@@ -81,7 +81,8 @@ async def upload_docs(files: list[UploadFile] = File(...)):
             try:
                 text = content.decode('utf-8')
                 engine.docs.add_document(safe_filename, text)
-            except: continue
+            except Exception:
+                continue
     return RedirectResponse(url="/vault", status_code=303)
 
 @app.post("/ask", response_class=HTMLResponse)
