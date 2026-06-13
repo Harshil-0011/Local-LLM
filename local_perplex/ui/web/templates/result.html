@@ -22,6 +22,10 @@
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
                 Vault
             </a>
+            <a href="/graph" class="nav-item">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"></circle><circle cx="18" cy="6" r="3"></circle><circle cx="12" cy="18" r="3"></circle><path d="M8.5 7.5 11 15"></path><path d="m15.5 7.5-2.5 7.5"></path><path d="M9 6h6"></path></svg>
+                GraphMap
+            </a>
             <a href="/history" class="nav-item active">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 History
@@ -39,7 +43,7 @@
                 <h2 style="font-size: 32px; letter-spacing: -0.04em; margin-bottom: 8px;">{{ question }}</h2>
                 <div style="display: flex; gap: 16px; align-items: center;">
                     <a href="/export/{{ current_session_index }}" class="pill-btn" style="text-decoration: none;">Export Markdown</a>
-                    <span style="font-size: 12px; color: var(--secondary-text);">{{ focus_mode or 'All' }} Focus • {{ mode|replace('_', ' ')|title }}</span>
+                    <span style="font-size: 12px; color: var(--secondary-text);">{{ focus_mode or 'All' }} Focus - {{ mode|replace('_', ' ')|title }}</span>
                 </div>
             </header>
 
@@ -75,7 +79,11 @@
                 <h3 style="font-size: 18px; font-weight: 600;">Answer</h3>
             </div>
             <div class="answer-content" style="margin-bottom: 40px;">
+                {% if error %}
+                <div id="streaming-answer" style="font-size: 18px; line-height: 1.7; color: #ff4132; white-space: pre-wrap;">{{ error }}</div>
+                {% else %}
                 <div id="streaming-answer" style="font-size: 18px; line-height: 1.7; color: var(--text-color); white-space: pre-wrap;">{{ answer or 'Thinking...' }}</div>
+                {% endif %}
             </div>
 
             <div id="related-section" style="margin-top: 40px; display: none;">
@@ -87,7 +95,7 @@
                 <form action="/ask" method="post">
                     <input type="hidden" name="mode" value="{{ mode or 'industry_standard' }}">
                     <input type="hidden" name="focus_mode" value="{{ focus_mode or 'All' }}">
-                    <input type="hidden" name="conversation_history" value="{{ conversation_history or '' }}">
+                    <input type="hidden" name="conversation_history" id="conversation-history-field" value="{{ conversation_history or '' }}">
                     <div style="display: flex; gap: 12px; align-items: center;">
                         <textarea name="question" placeholder="Ask a follow-up..." style="flex: 1; background: none; border: none; color: #fff; padding: 8px; outline: none; font-size: 16px; resize: none;" rows="1" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea>
                         <button type="submit" class="submit-btn">
@@ -131,20 +139,32 @@
     </style>
 
     <script>
+        function escapeHTML(text) {
+            return text.replace(/[&<>"']/g, (ch) => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            }[ch]));
+        }
+
         function processCitations(text) {
-            // Replace [1], [2] etc with clickable links
-            return text.replace(/\[(\d+)\]/g, (match, number) => {
+            const escaped = escapeHTML(text);
+            return escaped.replace(/\[(\d+)\]/g, (match, number) => {
                 return `<a href="#source-${number}" class="citation-link">${number}</a>`;
             });
         }
 
         {% if context_session_id %}
-        const streamUrl = `/stream-answer?question={{ question|urlencode }}&session_id={{ context_session_id }}&mode={{ mode }}&tag={{ tag }}`;
+        const streamUrl = `/stream-answer?question={{ question|urlencode }}&session_id={{ context_session_id }}&mode={{ mode|urlencode }}&tag={{ tag|urlencode }}`;
         const eventSource = new EventSource(streamUrl);
         const answerDiv = document.getElementById('streaming-answer');
         const progressDiv = document.getElementById('research-progress');
         const stepText = document.getElementById('step-text');
         const sourcesContainer = document.getElementById('sources-container');
+        const currentQuestion = {{ question|tojson }};
+        const startingHistory = {{ history_list|tojson }};
 
         if ("{{ mode }}" === "pro") progressDiv.style.display = 'block';
 
@@ -162,13 +182,21 @@
                 sourcesContainer.innerHTML = '';
                 data.update_sources.forEach((s, i) => {
                     const idx = i + 1;
-                    const domain = s.url.split('/')[2];
+                    let domain = '';
+                    try {
+                        domain = new URL(s.url).hostname;
+                    } catch {
+                        domain = (s.url || '').split('/')[2] || '';
+                    }
+                    const safeTitle = escapeHTML(s.title || 'Untitled source');
+                    const safeUrl = escapeHTML(s.url || '#');
+                    const safeDomain = escapeHTML(domain);
                     sourcesContainer.innerHTML += `
                         <div class="glass-card source-card" style="min-width: 200px; max-width: 200px; padding: 12px; flex-shrink: 0;" id="source-${idx}">
-                            <a href="${s.url}" class="source-title" target="_blank" style="font-size: 13px; font-weight: 600; display: block; height: 3.2em; overflow: hidden; margin-bottom: 8px;">${s.title}</a>
+                            <a href="${safeUrl}" class="source-title" target="_blank" style="font-size: 13px; font-weight: 600; display: block; height: 3.2em; overflow: hidden; margin-bottom: 8px;">${safeTitle}</a>
                             <div style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--secondary-text);">
-                                <img src="https://www.google.com/s2/favicons?domain=${domain}&sz=32" width="14" height="14" style="border-radius: 2px;">
-                                <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${domain}</span>
+                                <img src="https://www.google.com/s2/favicons?domain=${safeDomain}&sz=32" width="14" height="14" style="border-radius: 2px;">
+                                <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${safeDomain}</span>
                                 <span style="margin-left: auto; font-weight: 700;">${idx}</span>
                             </div>
                         </div>
@@ -188,20 +216,28 @@
 
             if (data.done) {
                 eventSource.close();
+                const historyField = document.getElementById('conversation-history-field');
+                if (historyField) {
+                    historyField.value = JSON.stringify([
+                        ...startingHistory,
+                        {question: currentQuestion, answer: accumulatedAnswer}
+                    ]);
+                }
                 if (data.related) {
                     const relatedSection = document.getElementById('related-section');
                     const relatedDiv = document.getElementById('related-questions');
                     relatedSection.style.display = 'block';
                     data.related.forEach(r => {
+                        const safeQuestion = escapeHTML(r);
                         const form = document.createElement('form');
                         form.action = '/ask';
                         form.method = 'post';
                         form.innerHTML = `
                             <input type="hidden" name="mode" value="{{ mode }}">
                             <input type="hidden" name="focus_mode" value="{{ focus_mode }}">
-                            <input type="hidden" name="question" value="${r}">
+                            <input type="hidden" name="question" value="${safeQuestion}">
                             <button type="submit" style="background: none; border: none; color: var(--accent-color); text-align: left; padding: 8px 0; cursor: pointer; font-size: 15px; width: 100%;">
-                                ${r} <span style="font-size: 12px; opacity: 0.5;">→</span>
+                                ${safeQuestion} <span style="font-size: 12px; opacity: 0.5;">-&gt;</span>
                             </button>
                         `;
                         relatedDiv.appendChild(form);

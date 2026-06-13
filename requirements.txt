@@ -1,4 +1,4 @@
-duckduckgo_search
+ddgs
 requests
 pyyaml
 click
@@ -9,7 +9,7 @@ pydantic
 pydantic-settings
 python-multipart
 beautifulsoup4
-pybind11
 pypdf
 python-docx
 openpyxl
+cachetools

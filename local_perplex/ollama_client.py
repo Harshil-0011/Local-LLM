@@ -23,7 +23,7 @@ class OllamaClient:
         if not stream:
             start_time = time.time()
             try:
-                response = requests.post(self.chat_url, json=payload, timeout=120)
+                response = requests.post(self.chat_url, json=payload, timeout=300)
                 response.raise_for_status()
                 duration = time.time() - start_time
                 result = response.json()
@@ -40,7 +40,7 @@ class OllamaClient:
 
     def _stream_chat(self, payload):
         try:
-            response = requests.post(self.chat_url, json=payload, stream=True, timeout=120)
+            response = requests.post(self.chat_url, json=payload, stream=True, timeout=300)
             response.raise_for_status()
             for line in response.iter_lines():
                 if line:

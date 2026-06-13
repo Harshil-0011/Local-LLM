@@ -1,4 +1,21 @@
 import click
+import sys
+from pathlib import Path
+
+# Robust path setup: try to import local_perplex, and if it fails, add paths
+try:
+    import local_perplex
+except ImportError:
+    # Try adding known paths to sys.path
+    import site
+    for site_dir in site.getsitepackages():
+        if Path(site_dir).exists():
+            sys.path.insert(0, site_dir)
+    # Also try the directory where this script is
+    script_dir = Path(__file__).parent.parent.parent
+    if str(script_dir) not in sys.path:
+        sys.path.insert(0, str(script_dir))
+
 from local_perplex.engine import LocalPerplex
 
 @click.command()

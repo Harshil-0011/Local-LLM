@@ -1,9 +1,18 @@
 import json
+import os
 from pathlib import Path
 from datetime import datetime
 
 class HistoryManager:
-    def __init__(self, history_dir: str = "history"):
+    def __init__(self, history_dir: str = None):
+        if history_dir is None:
+            history_dir = os.getenv("LOCAL_PERPLEX_HISTORY_DIR")
+            if history_dir is None:
+                project_root = Path(__file__).parent.parent
+                history_dir = project_root / "history"
+        else:
+            history_dir = Path(history_dir)
+        
         self.history_dir = Path(history_dir)
         self.history_dir.mkdir(parents=True, exist_ok=True)
 

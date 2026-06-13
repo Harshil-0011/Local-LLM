@@ -1,9 +1,12 @@
-from duckduckgo_search import DDGS
+from ddgs import DDGS
 import requests
 from bs4 import BeautifulSoup
-import local_perplex.local_perplex_core as core
+import logging
 from concurrent.futures import ThreadPoolExecutor
 import time
+from .local_perplex_core import calculate_score
+
+logger = logging.getLogger(__name__)
 
 class SearchEngine:
     def __init__(self):
@@ -27,17 +30,23 @@ class SearchEngine:
                 text = soup.get_text(separator=' ', strip=True)
                 if len(text) < 100: # Skip very thin pages
                     return None
-                score = core.calculate_score(query, text)
+                
+                score = calculate_score(query, text)
+                
                 return {
                     "title": r.get('title', 'No Title'),
                     "url": url,
                     "content": text[:10000],
                     "relevance": score
                 }
-        except Exception:
+        except Exception as e:
             # Silent fail for individual URLs is expected in parallel scraping
             pass
         return None
+
+    def _python_fallback_score(self, query: str, text: str) -> float:
+        """Backward-compatible pure-Python scoring hook."""
+        return calculate_score(query, text)
 
     def search(self, query: str, num_results: int = 20, focus_mode: str = "All"):
         sources = []
@@ -57,17 +66,26 @@ class SearchEngine:
         elif focus_mode == "Computational":
             query = f"{query} site:wolframalpha.com OR site:wikipedia.org"
 
-        # Try multiple times or fallback
+        # Try multiple times with exponential backoff
         for attempt in range(3):
             try:
                 with DDGS() as ddgs:
                     results = list(ddgs.text(query, max_results=num_results))
-                if results: break
+                if results: 
+                    break
             except Exception as e:
-                print(f"Search attempt {attempt+1} failed: {e}")
-                time.sleep(1)
+                # Check for bot challenge (HTML response instead of JSON)
+                if "challenge" in str(e).lower() or "cloudflare" in str(e).lower():
+                    logger.warning(f"DuckDuckGo bot challenge detected. Retrying with delay...")
+                    # Exponential backoff: 2^attempt seconds
+                    wait_time = 2 ** attempt
+                    time.sleep(wait_time)
+                else:
+                    logger.warning(f"Search attempt {attempt+1} failed: {e}")
+                    time.sleep(1)
 
         if not results:
+            logger.warning(f"No results found for query: {query}")
             return []
 
         with ThreadPoolExecutor(max_workers=10) as executor:

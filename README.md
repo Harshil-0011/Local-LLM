@@ -1,137 +1,120 @@
-# 🏛️ Local Perplex — The Private AI Research Engine
+# Local Perplex
 
-[![Privacy First](https://img.shields.io/badge/Privacy-100%25%20Local-green?style=for-the-badge&logo=shield)](https://github.com/)
-[![High Performance](https://img.shields.io/badge/Engine-C%2B%2B%20Native-blue?style=for-the-badge&logo=c%2B%2B)](https://github.com/)
-[![Multimodal](https://img.shields.io/badge/Vision-Active-orange?style=for-the-badge&logo=openai)](https://github.com/)
+Local Perplex is a Python web and CLI research assistant that combines web search,
+local documents, Ollama synthesis, and a growing local GraphMap memory.
 
-> "Local Perplex is more than a research engine. It is a commitment to a future where intelligence is personal, private, and exceptionally fast."
+## What It Does
 
-Local Perplex is a revolutionary step forward in the way we interact with information. It is a research engine built on a foundation of absolute privacy and exceptional performance. By combining a native **C++ Core** with the local intelligence of **Ollama**, we have created an experience that is as powerful as it is secure. This is not just a tool for finding answers; it is a tool for deeper understanding.
+- Searches the web and ranks sources with a pure-Python ranking core.
+- Uses Ollama for local answer synthesis when Ollama is running.
+- Reads local documents from `documents/` for private RAG context.
+- Stores completed research, sources, documents, terms, and relationships in a
+  SQLite GraphMap at `graph/knowledge_graph.sqlite3`.
+- Reuses GraphMap memory in future prompts so repeated use can improve answers
+  over time.
+- Keeps incognito searches out of history and GraphMap storage.
 
----
+## Requirements
 
-## 🔐 The Power of Local Intelligence
+- Python 3.10+
+- Ollama for answer generation
+- A pulled Ollama model, for example:
 
-At the heart of Local Perplex is a simple yet profound belief: **your data belongs to you**. In a world where cloud dependency has become the norm, we have chosen a different path.
+```powershell
+ollama pull llama3.2-vision
+```
 
-*   **100% Local Processing**: All synthesis, from language to images, happens on your hardware.
-*   **Zero Data Leakage**: Your questions and insights never leave your machine.
-*   **Total Sovereignty**: A level of security that cloud alternatives simply cannot match.
+## Install
 
----
+```powershell
+python -m venv .venv
+.\.venv\Scripts\activate
+pip install -r requirements.txt
+pip install -e .
+```
 
-## 🔍 Deep Research Reimagined
+## Run
 
-When you need more than just a quick fact, our **Deep Research** mode takes over. It does not simply perform a single search; it acts as a sophisticated digital agent.
+Start Ollama first:
 
-*   **Agentic Planning**: Analyzes your request and creates a multi-step research plan.
-*   **Targeted Execution**: Performs multiple searches across the web to gather exhaustive data.
-*   **Watch the Process**: Follow along as it moves through planning, searching, and final synthesis.
-*   **Comprehensive Reports**: Structured results that give you the full picture, every time.
+```powershell
+ollama serve
+```
 
----
+Then run the web app:
 
-## 👁️ A Lens Into Your World
+```powershell
+perplex-gui
+```
 
-Our multimodal **Lens** feature transforms the way you see and understand the world around you.
+Open:
 
-*   **Visual Precision**: Attach an image and our vision system will analyze objects and entities with remarkable accuracy.
-*   **Polyglot OCR**: Extract and **translate foreign text** in real-time. A photo of a Spanish document can be translated and used as context for a deeper search.
-*   **Seamless Fusion**: Visual and textual understanding working together like magic.
+```text
+http://localhost:8000
+```
 
----
+You can also run the compatibility wrapper directly:
 
-## 🏢 The Knowledge Vault
+```powershell
+python ui\web\app.py
+```
 
-Your own private library is a goldmine of information. The **Knowledge Vault** allows you to bring that information into your research workflow.
+CLI usage:
 
-*   **Universal Format Support**: Full support for PDF, Word, Excel, CSV, and Markdown.
-*   **Vault Management**: A dedicated interface to upload, index, and purge documents from your local search context.
-*   **Local RAG**: A seamless experience where your private data and the world's knowledge work in perfect unison.
+```powershell
+perplex "What is retrieval augmented generation?"
+```
 
----
+## GraphMap
 
-## ⚡ Performance by Design
+The GraphMap is a local SQLite knowledge graph. Each completed non-incognito
+research session adds nodes for questions, sources, terms, tags, and research
+answers. Uploaded documents add document and term nodes. Future research queries
+retrieve related graph context and include it before synthesis.
 
-To ensure a fluid and responsive experience, we built the ranking engine in **Native C++**.
+View it in the web app:
 
-*   **Native Speed**: Tokenization and relevance scoring happen in milliseconds.
-*   **Multi-Threaded Ranking**: Parallel analysis of web sources with manual GIL management for maximum throughput.
-*   **Massive Parallelism**: Analyze dozens of sources simultaneously without a hint of slowdown.
+```text
+http://localhost:8000/graph
+```
 
----
+Or inspect JSON:
 
-## 🔗 Interactive Citations
+```text
+http://localhost:8000/api/graph
+```
 
-We believe that every answer should be verifiable. Every report features **Numerical Citations** that aren't just numbers—they are **Interactive Links**.
+## Testing
 
-*   **Instant Verification**: A single click takes you directly to the source material.
-*   **Build Trust**: View the original data card to verify information for yourself.
-*   **Transparent Research**: Built on a foundation of clarity and accountability.
+```powershell
+python -B -m pytest -q -p no:cacheprovider
+```
 
----
+`-B` and `-p no:cacheprovider` keep the test run from writing bytecode and
+pytest cache files.
 
-## 🛡️ Absolute Privacy by Default
+## Troubleshooting
 
-Privacy is not a feature we added later; it is the core of everything we build.
+If the web app loads but answers do not stream, check Ollama:
 
-*   **Incognito Mode**: Research sensitive topics with total anonymity.
-*   **No Trace Left Behind**: Bypasses history logging and disk persistence entirely.
-*   **Digital Freedom**: The ultimate expression of our commitment to your privacy.
+```powershell
+curl http://localhost:11434/api/tags
+```
 
----
+If no models are returned, pull one:
 
-## 🛠️ Installation and Setup
+```powershell
+ollama pull llama3.2-vision
+```
 
-Getting started with Local Perplex is straightforward. Designed to run on **Windows**, it requires a few basic components to deliver its full potential.
+If you are running from source, prefer:
 
-1.  **Prerequisites**: Install **Python 3.10+** and **Ollama**.
-2.  **Building the Engine**:
-    ```bash
-    mkdir build && cd build
-    cmake .. && cmake --build . --config Release
-    ```
-3.  **Installing the Package**:
-    ```bash
-    pip install -e .
-    ```
-4.  **Running the Application**:
-    ```bash
-    perplex-gui
-    ```
+```powershell
+perplex-gui
+```
 
----
+or:
 
-## 🎨 The Minimalist Experience
-
-The user interface of Local Perplex is a study in restraint and elegance.
-
-*   **Glassmorphism**: A clean dark mode with subtle, modern visual effects.
-*   **Smooth Animations**: Transitions designed to be fluid and non-intrusive.
-*   **Premium Aesthetic**: An environment that respects your attention and focus.
-
----
-
-## 📊 Performance & Privacy Benchmarks
-
-Local Perplex is designed to provide a high-performance, private alternative to cloud-based research engines. Below is a comparison between Local Perplex and cloud-based alternatives like Perplexity Pro.
-
-| Feature                | Local Perplex (🏛️)         | Perplexity Pro (☁️)        |
-|------------------------|-----------------------------|-----------------------------|
-| **Core Latency**       | **< 10ms** (Native C++)     | ~500ms - 2s (Cloud API)     |
-| **Research Synthesis** | 3s - 8s (Local LLM)         | 5s - 15s (Cloud LLM)        |
-| **Data Privacy**       | **100% Local (Zero Leakage)**| Cloud Stored (Third Party)  |
-| **Multimodal Vision**  | Local vision-llama          | Cloud-based Vision          |
-| **Cost**               | **$0 (Forever Free)**       | $20 / month                |
-| **Availability**       | Offline-ready               | Requires Internet           |
-
-### 🚀 Benchmarking the C++ Engine
-
-To ensure maximum responsiveness, our ranking engine is written in native C++. While interpreted languages like Python introduce significant overhead, our native implementation performs tokenization and relevance scoring with near-instant speed.
-
-*   **Native Ranking**: Processing 10,000+ document snippets in milliseconds.
-*   **Zero GIL Bottleneck**: Multithreaded ranking for parallel web search analysis.
-*   **Memory Efficient**: Optimized memory allocation for large-scale research tasks.
-
----
-*Built for the privacy-conscious elite. Research, redefined.*
+```powershell
+python ui\web\app.py
+```

@@ -18,17 +18,20 @@ dependencies = [
     "pydantic",
     "pydantic-settings",
     "python-multipart",
-    "duckduckgo_search",
+    "ddgs",
     "beautifulsoup4",
-    "pybind11",
     "pypdf",
     "python-docx",
-    "openpyxl"
+    "openpyxl",
+    "cachetools"
 ]
 
 [project.scripts]
 perplex = "local_perplex.ui.cli:main"
 perplex-gui = "local_perplex.ui.web.app:main"
+
+[tool.setuptools.packages.find]
+include = ["local_perplex*"]
 
 [tool.setuptools.package-data]
 "local_perplex.ui.web" = ["templates/*.html", "static/*.css"]

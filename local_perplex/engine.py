@@ -2,16 +2,26 @@ from .ollama_client import OllamaClient
 from .history import HistoryManager
 from .documents import DocumentManager
 from .search import SearchEngine
-import local_perplex.local_perplex_core as cpp_core
+from .graph import KnowledgeGraph
+from .local_perplex_core import ResearchEngine
+import logging
+
+logger = logging.getLogger(__name__)
 
 class LocalPerplex:
     def __init__(self):
         self.search_engine = SearchEngine()
-        self.cpp_engine = cpp_core.ResearchEngine()
+        self.ranking_engine = ResearchEngine()
         self.ollama = OllamaClient("http://localhost:11434")
+        self.ollama_online = False
+        self.available_models = []
         self.history = HistoryManager()
         self.docs = DocumentManager()
+        self.graph = KnowledgeGraph()
         self.model = "llama3.2-vision"
+        
+        # Try to connect to Ollama and validate models
+        self._validate_ollama_connection()
 
     def deep_research_iterative(self, question: str, mode: str = "pro", focus_mode: str = "All"):
         """Yields progress steps and finally the results."""
@@ -43,7 +53,7 @@ class LocalPerplex:
                     unique_sources.append(s)
 
             if unique_sources:
-                ranked = self.cpp_engine.rank_sources(query, [{"title": s["title"], "url": s["url"], "content": s["content"]} for s in unique_sources])
+                ranked = self._rank_sources(query, [{"title": s["title"], "url": s["url"], "content": s["content"]} for s in unique_sources])
                 selected = ranked[:5] # Top 5 per query
                 all_selected.extend(selected)
 
@@ -55,6 +65,10 @@ class LocalPerplex:
         local_context = self.docs.get_local_context()
         if local_context:
             full_context = f"--- LOCAL DOCUMENTS ---\n{local_context}\n\n{full_context}"
+
+        graph_context = self.graph.context_for_query(question)
+        if graph_context:
+            full_context = f"{graph_context}\n\n{full_context}"
 
         yield "result", (question, all_selected, full_context)
 
@@ -87,7 +101,7 @@ class LocalPerplex:
             refined_query = question
 
         raw_web_sources = self.search_engine.search(refined_query, focus_mode=focus_mode)
-        ranked = self.cpp_engine.rank_sources(refined_query, [{"title": s["title"], "url": s["url"], "content": s["content"]} for s in raw_web_sources])
+        ranked = self._rank_sources(refined_query, [{"title": s["title"], "url": s["url"], "content": s["content"]} for s in raw_web_sources])
 
         limit = 10 if mode == "industry_standard" else 20
         selected = ranked[:limit]
@@ -95,6 +109,9 @@ class LocalPerplex:
         context = "\n\n".join([f"Source: {s.url}\nContent: {s.content[:2500]}" for s in selected])
         local_context = self.docs.get_local_context()
         if local_context: context = f"--- LOCAL ---\n{local_context}\n\n--- WEB ---\n{context}"
+        graph_context = self.graph.context_for_query(question)
+        if graph_context:
+            context = f"{graph_context}\n\n{context}"
 
         return question, selected, context
 
@@ -127,12 +144,89 @@ class LocalPerplex:
             answer += chunk
         return answer
 
+    def _rank_sources(self, query: str, sources: list):
+        """Rank sources using the pure-Python ranking engine."""
+        return self.ranking_engine.rank_sources(query, sources)
+
+    def _validate_ollama_connection(self, timeout: float = 0.75):
+        """Check if Ollama is running and validate model availability."""
+        try:
+            import requests
+            response = requests.get(f"{self.ollama.base_url}/api/tags", timeout=timeout)
+            if response.status_code == 200:
+                data = response.json()
+                self.available_models = [m.get("name", "") for m in data.get("models", [])]
+                self.ollama_online = True
+                
+                # Check if requested model is available
+                if self.model not in self.available_models:
+                    if self.available_models:
+                        logger.warning(f"Model '{self.model}' not found. Available models: {', '.join(self.available_models)}")
+                        # Use first available model as fallback
+                        self.model = self.available_models[0]
+                        logger.info(f"Using fallback model: {self.model}")
+                    else:
+                        logger.warning("No models available on Ollama. Please pull a model first.")
+                        self.ollama_online = False
+            else:
+                logger.warning(f"Ollama API returned status {response.status_code}")
+                self.ollama_online = False
+                self.available_models = []
+        except Exception as e:
+            logger.warning(f"Ollama connection failed: {e}. App will start but research features disabled.")
+            self.ollama_online = False
+            self.available_models = []
+
+    def refresh_status(self):
+        self._validate_ollama_connection()
+        return {
+            "ollama_online": self.ollama_online,
+            "available_models": self.available_models,
+            "current_model": self.model,
+        }
+
+    def graph_stats(self):
+        return self.graph.stats()
+
+    def index_document(self, filename: str):
+        path = self.docs.doc_dir / filename
+        content = self.docs.extract_document_text(path)
+        if content:
+            self.graph.record_document(filename, content)
+
+    @staticmethod
+    def _source_payload(source):
+        if isinstance(source, dict):
+            return {
+                "title": source.get("title", "Unknown"),
+                "url": source.get("url", ""),
+                "relevance": source.get("relevance", 0.0),
+                "category": source.get("category", "General"),
+                "snippet": source.get("content", source.get("snippet", ""))[:300],
+            }
+        return {
+            "title": getattr(source, "title", "Unknown"),
+            "url": getattr(source, "url", ""),
+            "relevance": getattr(source, "relevance", 0.0),
+            "category": getattr(source, "category", "General"),
+            "snippet": getattr(source, "content", "")[:300],
+        }
+
     def finalize_research(self, question: str, answer: str, selected: list, tag: str = "General"):
         if tag != "[INCOGNITO]":
-            self.history.save_session(question, answer, [{"title": s.title, "url": s.url, "relevance": s.relevance, "category": s.category, "snippet": s.content[:300]} for s in selected], tag=tag)
+            source_payloads = [self._source_payload(s) for s in selected]
+            self.history.save_session(question, answer, source_payloads, tag=tag)
+            self.graph.record_research(question, answer, selected, tag=tag)
 
-        related_raw = self.ollama.chat(self.model, [
-            {"role": "system", "content": "Suggest 3 follow-up research questions based on the answer. One per line."},
-            {"role": "user", "content": answer}
-        ])
-        return [q.strip("- ").strip() for q in related_raw.split("\n") if q.strip()][:3]
+        if not self.ollama_online:
+            return ["Enable Ollama to get follow-up questions."]
+
+        try:
+            related_raw = self.ollama.chat(self.model, [
+                {"role": "system", "content": "Suggest 3 follow-up research questions based on the answer. One per line."},
+                {"role": "user", "content": answer}
+            ])
+            return [q.strip("- ").strip() for q in related_raw.split("\n") if q.strip()][:3]
+        except Exception as e:
+            logger.error(f"Error generating follow-up questions: {e}")
+            return ["Error generating follow-up questions. Check Ollama connection."]
